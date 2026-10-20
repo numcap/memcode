@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { browser } from 'wxt/browser';
 import { SiteAccessBanner } from '@/components/SiteAccessBanner';
 import { buildQueue } from '@/lib/storage';
 import { CardDetail } from './CardDetail';
@@ -17,6 +18,11 @@ export function App() {
   useEffect(() => {
     document.title = dueCount ? `(${dueCount}) MemCode` : 'MemCode';
   }, [dueCount]);
+
+  // Pull what other browsers did before you start reviewing. No-op if sync isn't set up.
+  useEffect(() => {
+    browser.runtime.sendMessage({ type: 'sync-now' }).catch(() => {});
+  }, []);
 
   const reviewCard = route.name === 'review' ? route.query.get('card') : null;
 

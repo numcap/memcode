@@ -669,6 +669,22 @@ details.panel[open] > summary {
   gap: 8px;
   margin-top: 12px;
 }
+.sync-steps {
+  padding-left: 20px;
+}
+.sync-steps li {
+  margin: 4px 0;
+}
+.sync-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 8px;
+}
+.sync-form .input {
+  flex: 1 1 200px;
+  min-width: 0;
+}
 
 @media (max-width: 720px) {
   .stats {

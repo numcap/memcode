@@ -1,10 +1,13 @@
 import { browser } from 'wxt/browser';
 import { startOfDay } from './format';
-import type { Card, ExportFile, Settings, Source } from './types';
+import type { Card, ExportFile, GitHubConfig, Settings, Source, SyncStatus } from './types';
 
 // One key per card so a save only rewrites that card, not the whole deck.
 const CARD_PREFIX = 'card:';
 const SETTINGS_KEY = 'settings';
+const DELETED_KEY = 'deleted';
+const GITHUB_KEY = 'github';
+const SYNC_STATUS_KEY = 'syncStatus';
 
 export const DEFAULT_SETTINGS: Settings = {
   retention: 0.9,
@@ -19,6 +22,11 @@ export function cardId(source: Source, slug: string): string {
 
 const cardKey = (id: string) => CARD_PREFIX + id;
 
+/** When the card last changed. Cards saved before `updatedAt` existed fall back to lastSeenAt. */
+export function changedAt(card: Card): number {
+  return card.updatedAt ?? card.lastSeenAt;
+}
+
 export async function getCard(id: string): Promise<Card | undefined> {
   const key = cardKey(id);
   const got = await browser.storage.local.get(key);
@@ -32,21 +40,49 @@ export async function getAllCards(): Promise<Card[]> {
     .map(([, value]) => value as Card);
 }
 
-export async function saveCard(card: Card): Promise<void> {
-  await browser.storage.local.set({ [cardKey(card.id)]: card });
+/** Stamps `updatedAt`, which is what sync and import compare, and returns the stored card. */
+export async function saveCard(card: Card, now = Date.now()): Promise<Card> {
+  const stamped = { ...card, updatedAt: now };
+  await browser.storage.local.set({ [cardKey(card.id)]: stamped });
+  return stamped;
 }
 
 /** Read-modify-write against the stored copy so concurrent edits elsewhere aren't lost. */
 export async function updateCard(id: string, patch: (card: Card) => Card): Promise<Card | undefined> {
   const card = await getCard(id);
   if (!card) return undefined;
-  const next = patch(card);
-  await saveCard(next);
-  return next;
+  return saveCard(patch(card));
 }
 
+/** Leaves a tombstone so sync deletes the card elsewhere instead of bringing it back. */
 export async function deleteCard(id: string): Promise<void> {
+  const deleted = await getDeleted();
+  await browser.storage.local.set({ [DELETED_KEY]: { ...deleted, [id]: Date.now() } });
   await browser.storage.local.remove(cardKey(id));
+}
+
+export async function getDeleted(): Promise<Record<string, number>> {
+  const got = await browser.storage.local.get(DELETED_KEY);
+  return (got[DELETED_KEY] ?? {}) as Record<string, number>;
+}
+
+/**
+ * Writes the result of a sync merge as-is, without stamping new timestamps,
+ * so the next sync doesn't see these cards as local edits.
+ */
+export async function applyRemote(changes: {
+  writes: Card[];
+  removals: string[];
+  deleted: Record<string, number>;
+  settings?: Settings;
+}): Promise<void> {
+  // Only write what changed: every write fires storage.onChanged, which schedules another sync.
+  const set: Record<string, unknown> = {};
+  for (const card of changes.writes) set[cardKey(card.id)] = card;
+  if (changes.settings) set[SETTINGS_KEY] = changes.settings;
+  if (JSON.stringify(changes.deleted) !== JSON.stringify(await getDeleted())) set[DELETED_KEY] = changes.deleted;
+  if (Object.keys(set).length) await browser.storage.local.set(set);
+  if (changes.removals.length) await browser.storage.local.remove(changes.removals.map(cardKey));
 }
 
 export async function getSettings(): Promise<Settings> {
@@ -60,7 +96,7 @@ export async function getSettings(): Promise<Settings> {
 }
 
 export async function saveSettings(settings: Settings): Promise<void> {
-  await browser.storage.local.set({ [SETTINGS_KEY]: settings });
+  await browser.storage.local.set({ [SETTINGS_KEY]: { ...settings, updatedAt: Date.now() } });
 }
 
 /** Cards count as due for the whole calendar day they are scheduled on, like Anki. */
@@ -98,6 +134,11 @@ export function onCardsChanged(callback: () => void): () => void {
   return () => browser.storage.onChanged.removeListener(listener);
 }
 
+/** True for writes that change the deck, which is what sync needs to push. */
+export function isDeckChange(changes: Record<string, unknown>): boolean {
+  return Object.keys(changes).some((k) => k.startsWith(CARD_PREFIX) || k === SETTINGS_KEY || k === DELETED_KEY);
+}
+
 export function onSettingsChanged(callback: (settings: Settings) => void): () => void {
   const listener = (changes: Record<string, unknown>, area: string) => {
     if (area === 'local' && SETTINGS_KEY in changes) getSettings().then(callback);
@@ -107,8 +148,8 @@ export function onSettingsChanged(callback: (settings: Settings) => void): () =>
 }
 
 export async function exportData(): Promise<ExportFile> {
-  const [cards, settings] = await Promise.all([getAllCards(), getSettings()]);
-  return { app: 'memcode', version: 1, exportedAt: Date.now(), settings, cards };
+  const [cards, settings, deleted] = await Promise.all([getAllCards(), getSettings(), getDeleted()]);
+  return { app: 'memcode', version: 2, exportedAt: Date.now(), settings, cards, deleted };
 }
 
 export interface ImportResult {
@@ -117,7 +158,7 @@ export interface ImportResult {
   skipped: number;
 }
 
-/** Merges by card id; when both sides have a card, the one seen more recently wins. */
+/** Merges by card id; when both sides have a card, the one changed more recently wins. */
 export async function importData(data: unknown): Promise<ImportResult> {
   const file = data as Partial<ExportFile>;
   if (file?.app !== 'memcode' || !Array.isArray(file.cards)) {
@@ -133,7 +174,7 @@ export async function importData(data: unknown): Promise<ImportResult> {
     }
     const current = existing.get(card.id);
     if (!current) result.added++;
-    else if (card.lastSeenAt > current.lastSeenAt) result.updated++;
+    else if (changedAt(card) > changedAt(current)) result.updated++;
     else {
       result.skipped++;
       continue;
@@ -144,7 +185,7 @@ export async function importData(data: unknown): Promise<ImportResult> {
   return result;
 }
 
-function isCardLike(value: unknown): value is Card {
+export function isCardLike(value: unknown): value is Card {
   const c = value as Card;
   return (
     typeof c?.id === 'string' &&
@@ -154,4 +195,35 @@ function isCardLike(value: unknown): value is Card {
     Array.isArray(c.submissions) &&
     Array.isArray(c.reviewLog)
   );
+}
+
+export async function getGitHubConfig(): Promise<GitHubConfig | undefined> {
+  const got = await browser.storage.local.get(GITHUB_KEY);
+  return got[GITHUB_KEY] as GitHubConfig | undefined;
+}
+
+export async function saveGitHubConfig(config: GitHubConfig): Promise<void> {
+  await browser.storage.local.set({ [GITHUB_KEY]: config });
+}
+
+/** Forgets the token and sync state. The local deck stays. */
+export async function clearGitHubConfig(): Promise<void> {
+  await browser.storage.local.remove([GITHUB_KEY, SYNC_STATUS_KEY]);
+}
+
+export async function getSyncStatus(): Promise<SyncStatus> {
+  const got = await browser.storage.local.get(SYNC_STATUS_KEY);
+  return (got[SYNC_STATUS_KEY] ?? {}) as SyncStatus;
+}
+
+export async function saveSyncStatus(status: SyncStatus): Promise<void> {
+  await browser.storage.local.set({ [SYNC_STATUS_KEY]: status });
+}
+
+export function onSyncChanged(callback: () => void): () => void {
+  const listener = (changes: Record<string, unknown>, area: string) => {
+    if (area === 'local' && (GITHUB_KEY in changes || SYNC_STATUS_KEY in changes)) callback();
+  };
+  browser.storage.onChanged.addListener(listener);
+  return () => browser.storage.onChanged.removeListener(listener);
 }

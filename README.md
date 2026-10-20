@@ -2,7 +2,7 @@
 
 A browser extension for Chrome and Firefox that does spaced repetition on the LeetCode and NeetCode problems you've solved. When a submission is accepted, MemCode asks how hard it was (Again / Hard / Good / Easy, like Anki). It saves the problem, your code, and a short "key insight" note, then schedules reviews with [FSRS](https://github.com/open-spaced-repetition/ts-fsrs). Reviews are active recall: you look at the problem, recall the pattern and code, then reveal your notes and solution. You don't solve problems inside the extension.
 
-Everything is stored locally in the browser's extension storage. There is no account and no server. Each browser keeps its own deck; use **Settings → Export / Import** to move it between browsers.
+Everything is stored locally in the browser's extension storage. There is no account and no server. To share one deck between browsers, turn on **GitHub sync** (below), or move it by hand with **Settings → Export / Import**.
 
 For a guided tour of how it all works (extension contexts, the network hook, Shadow DOM, FSRS, cross-browser quirks, testing), read [docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md).
 
@@ -56,6 +56,16 @@ For development, `npm run dev:firefox` rebuilds `.output/firefox-mv3-dev` on sav
 - **Review.** The dashboard (`dashboard.html`) has a review queue, a library, card details, and settings, including export/import. The toolbar badge shows how many reviews are due.
 
 Both browsers use Manifest V3 from the same source. WXT generates a service-worker background for Chrome and an event-page background plus `browser_specific_settings` for Firefox.
+
+## Sync with GitHub
+
+MemCode can keep your deck in a GitHub repository, so every browser you connect shares the same cards, notes and review history, and the repo's commit history records your progress.
+
+1. Create a private repository (an empty one is fine), e.g. `you/memcode-deck`.
+2. Create a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) with access to **only that repository** and the **Contents: Read and write** permission.
+3. In MemCode, open **Settings → GitHub sync**, enter the repository and token, and click **Connect**. Do the same in each other browser.
+
+The deck is one file, `memcode.json`, in the same format as **Export JSON**, so you can also download it from GitHub and import it by hand. Changes are pushed about 30 seconds after you make them; other browsers' changes are pulled on browser startup, when the dashboard opens, and every 30 minutes. Each card merges on its own and the most recent change wins, so if you review the *same* problem in two browsers between syncs, only the later review is kept. The token is stored unencrypted in the browser's extension storage and is never exported or synced, which is why it should only have access to that one repo.
 
 ## Keyboard
 

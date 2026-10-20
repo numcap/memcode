@@ -4,6 +4,7 @@ import { newSrsState } from '@/lib/srs';
 import {
   buildQueue,
   DEFAULT_SETTINGS,
+  deleteCard,
   exportData,
   getAllCards,
   getCard,
@@ -12,6 +13,7 @@ import {
   isDue,
   saveCard,
   saveSettings,
+  updateCard,
 } from '@/lib/storage';
 import type { Card } from '@/lib/types';
 
@@ -94,8 +96,8 @@ describe('export / import', () => {
   beforeEach(() => fakeBrowser.reset());
 
   it('exports everything and merges imports by recency', async () => {
-    await saveCard(makeCard('kept', now, { lastSeenAt: now, notes: 'local newer' }));
-    await saveCard(makeCard('stale', now, { lastSeenAt: now - 9 * DAY, notes: 'local older' }));
+    await saveCard(makeCard('kept', now, { lastSeenAt: now, notes: 'local newer' }), now);
+    await saveCard(makeCard('stale', now, { lastSeenAt: now - 9 * DAY, notes: 'local older' }), now - 9 * DAY);
     const exported = await exportData();
     expect(exported.app).toBe('memcode');
     expect(exported.cards).toHaveLength(2);
@@ -118,5 +120,31 @@ describe('export / import', () => {
   it('rejects files that are not MemCode exports', async () => {
     await expect(importData({ cards: [] })).rejects.toThrow(/Not a MemCode export/);
     await expect(importData(null)).rejects.toThrow();
+  });
+});
+
+describe('change tracking for sync', () => {
+  beforeEach(() => fakeBrowser.reset());
+
+  it('stamps updatedAt on every save, including notes-only edits', async () => {
+    await saveCard(makeCard('a', now), now - DAY);
+    expect((await getCard('leetcode:a'))?.updatedAt).toBe(now - DAY);
+    const edited = await updateCard('leetcode:a', (c) => ({ ...c, notes: 'new' }));
+    expect(edited?.updatedAt).toBeGreaterThan(now - DAY);
+    expect((await getCard('leetcode:a'))?.updatedAt).toBe(edited?.updatedAt);
+  });
+
+  it('leaves a tombstone when deleting, and exports it', async () => {
+    await saveCard(makeCard('a', now));
+    await deleteCard('leetcode:a');
+    expect(await getCard('leetcode:a')).toBeUndefined();
+    const exported = await exportData();
+    expect(exported.version).toBe(2);
+    expect(Object.keys(exported.deleted ?? {})).toEqual(['leetcode:a']);
+  });
+
+  it('still imports version 1 files', async () => {
+    const result = await importData({ app: 'memcode', version: 1, exportedAt: now, settings: DEFAULT_SETTINGS, cards: [makeCard('a', now)] });
+    expect(result.added).toBe(1);
   });
 });

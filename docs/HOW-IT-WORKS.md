@@ -454,6 +454,7 @@ interface Card {
   srs: SrsState;                     // FSRS state, with dates as epoch millis
   reviewLog: { at; rating; kind: 'solve' | 'review' }[];
   createdAt: number; lastSeenAt: number;   // lastSeenAt drives "seen N days ago"
+  updatedAt?: number;                // any change at all; what sync and import compare
 }
 ```
 
@@ -483,17 +484,32 @@ ts-fsrs works with `Date` objects, but Chrome's storage serializes values much l
 
 ### 7.5 Export and import: a simple sync rule
 
-Import merges by `id` using **last writer wins** on `lastSeenAt`: if the imported copy was seen more recently, it replaces the local one; otherwise it's skipped. It's simple and predictable. The cost is that edits on the "older" side are dropped rather than merged field by field, which is fine for occasional backups and moving between browsers.
+Import merges by `id` using **last writer wins** on `changedAt(card)` (its `updatedAt`, or `lastSeenAt` for cards saved before `updatedAt` existed): if the imported copy changed more recently, it replaces the local one; otherwise it's skipped. It's simple and predictable. The cost is that edits on the "older" side are dropped rather than merged field by field, which is fine for occasional backups and moving between browsers.
+
+Why not compare `lastSeenAt` alone? Editing notes or resetting a schedule doesn't "see" the problem, so it doesn't move `lastSeenAt`, and the edit would lose to any older copy. `saveCard` therefore stamps `updatedAt` on every write.
+
+### 7.6 GitHub sync
+
+Sync is the same rule run automatically against one file in a GitHub repo, `memcode.json`, which has the export format. Four pieces:
+
+- **`lib/merge.ts`** (pure): `mergeDecks(local, remote)` keeps the newer copy of each card and says what to write locally and whether the remote needs a commit. "Did it change?" compares card ids, `changedAt`s, tombstones and the settings timestamp, never `exportedAt`, so an idle sync makes no commit.
+- **Tombstones.** If deleting a card just removed its key, the next sync would bring it back from GitHub. `deleteCard` also records `deleted[id] = now`, and the merge drops any copy that isn't newer than its tombstone. Solving that problem again later makes a newer copy, which wins and clears the tombstone.
+- **`lib/github.ts`**: the REST contents API. Every write sends the `sha` of the file it read, and GitHub refuses it (409) if someone else pushed in between. That's **optimistic concurrency**: `lib/sync.ts` then reads again, re-merges on top of the other browser's version, and retries (up to 3 times). Reads use `cache: 'no-store'`, because GitHub marks API responses cacheable for 60 s and a stale read would look like a conflict every time.
+- **`entrypoints/background.ts`** is the only place sync runs, so two syncs never race inside one browser (`syncNow` also queues calls). Any write to `card:*`, `settings` or `deleted` re-creates a 30-second alarm, so a burst of edits becomes one commit. An alarm rather than `setTimeout`, because the MV3 background can be stopped before a timer fires. There is also a 30-minute alarm, a sync on browser startup, and the dashboard asks for one when it opens.
+
+The settings page (`entrypoints/dashboard/SyncPanel.tsx`) checks the repo with the token before saving it. The token lives in `storage.local` under `github` and is deliberately left out of `exportData`. No extra permission is needed: `api.github.com` sends CORS headers that allow any origin.
 
 <details>
 <summary><b>Check yourself (section 7)</b></summary>
 
 1. Each card has its own key. Why do we still need `updateCard`?
 2. What would go wrong if `srs.due` were stored as a `Date`?
+3. You delete a card in Chrome and it syncs. Firefox still has the card. Why doesn't Firefox's next sync put it back on GitHub?
 
 **Answers**
 1. Two writers can still race on the *same* card (a review vs a notes edit). Re-reading right before writing keeps the other writer's change.
 2. Chrome would serialize it to a string, and `due < now` comparisons and ts-fsrs would get the wrong type.
+3. GitHub now holds Chrome's tombstone, which is newer than Firefox's copy of the card. The merge drops the copy and Firefox deletes it locally.
 </details>
 
 ---
@@ -540,6 +556,7 @@ Problem statements are HTML from LeetCode (or Markdown from NeetCode, converted 
 `entrypoints/background.ts` is small:
 
 - **`updateBadge()`** computes the review queue and sets the toolbar badge text. It runs on install and startup, on every `storage.onChanged`, and every 15 minutes via `alarms` (cards become due as time passes, not only when data changes).
+- **Sync:** `syncNow()` on install and startup, on a 30-minute alarm, 30 seconds after deck changes (a re-created alarm), and on `sync-now` messages from the dashboard. See [7.6](#76-github-sync).
 - **`open-dashboard` messages:** content scripts can't use `browser.tabs`, so the toast's **Open** button asks the background to `tabs.create({ url: runtime.getURL('/dashboard.html') + hash })`. The handler only accepts hashes that start with `#/`. Never build URLs from unchecked message content.
 
 ---
@@ -580,10 +597,11 @@ The code that's easiest to test is code that takes values and returns values. Me
 
 Note `now` as a parameter in many functions: time is an input, so tests can freeze it instead of being flaky around midnight.
 
-### 11.2 Unit tests (`npm test`, 31 tests)
+### 11.2 Unit tests (`npm test`, 55 tests)
 
 - **Vitest** with WXT's `WxtVitest()` plugin, which wires up `@/` aliases and replaces `browser` with **`fakeBrowser`**, an in-memory implementation of `browser.storage` and friends. `fakeBrowser.reset()` before each test gives a clean slate.
 - **happy-dom** provides `localStorage` and a DOM in Node for the NeetCode editor-code tests.
+- **Fake GitHub:** `tests/sync.test.ts` stubs `fetch` with a small in-memory contents API (one file, sha checks, and a hook to push "from another browser" mid-sync) and fakes `Date` so edits get distinct timestamps.
 - **Fixtures:** `tests/fixtures/neetcode-metadata.json` is a trimmed *real* response, so tests break if our assumptions about its shape drift.
 
 ### 11.3 End-to-end tests (`npm run e2e`)
@@ -632,7 +650,10 @@ wxt.config.ts               manifest (per browser), permissions, MV3
 lib/
   types.ts                  Card, Problem, Submission, Settings, …
   srs.ts                    FSRS wrapper: newSrsState, rate, previewIntervals, (de)serialize
-  storage.ts                card:<id> keys, settings, isDue/buildQueue, updateCard, export/import
+  storage.ts                card:<id> keys, settings, tombstones, isDue/buildQueue, updateCard, export/import
+  merge.ts                  mergeDecks (pure): per-card last-writer-wins + tombstones
+  github.ts                 GitHub contents API: checkRepo, getFile, putFile (sha conflicts)
+  sync.ts                   syncNow: pull → merge → apply locally → push, with retries
   capture.ts                applySolve / applyReview (pure) + upsertFromSolve / recordReview
   hook.ts                   TrafficInspector (pure), message types, slug parsing
   leetcode.ts               GraphQL: problem details, latest accepted submission
@@ -644,9 +665,9 @@ entrypoints/
   page-hook.content.ts      MAIN world: wraps fetch/XHR, posts events
   leetcode.content.tsx      isolated: LeetCode adapter → startCapture
   neetcode.content.tsx      isolated: NeetCode adapter (+ metadata cache) → startCapture
-  background.ts             badge, alarms, open-dashboard
+  background.ts             badge, alarms, sync triggers, open-dashboard
   popup/                    toolbar popup
-  dashboard/                App (routes), Review, Library, CardDetail, SettingsPage, hooks
+  dashboard/                App (routes), Review, Library, CardDetail, SettingsPage, SyncPanel, hooks
 components/
   startCapture.tsx          message listener + Shadow DOM mount
   CaptureApp.tsx            floating button, rating modal, toast

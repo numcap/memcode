@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { exportData, importData, saveSettings } from '@/lib/storage';
 import type { Settings } from '@/lib/types';
 import { useCards, useSettings } from './hooks';
+import { SyncPanel } from './SyncPanel';
 
 export function SettingsPage() {
   const [settings, setSettings] = useSettings();
@@ -111,11 +112,14 @@ export function SettingsPage() {
         ))}
       </section>
 
+      <SyncPanel />
+
       <section className="panel">
         <h2>Your data</h2>
         <p className="setting-help">
-          Everything is stored only in this browser ({cards?.length ?? 0} cards). Export a backup now and then, or to move
-          to another browser. Importing merges by problem, and the copy seen more recently wins.
+          Your deck lives in this browser ({cards?.length ?? 0} cards), plus your GitHub repository if sync is on. Export a
+          backup now and then, or to move to another browser without sync. Importing merges by problem, and the copy
+          changed more recently wins.
         </p>
         <div className="data-actions">
           <button type="button" className="mc-btn" onClick={onExport}>
