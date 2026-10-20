@@ -1,0 +1,42 @@
+{
+  "name": "memcode",
+  "description": "Spaced repetition for LeetCode and NeetCode problems",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt -b firefox",
+    "build": "wxt build",
+    "build:firefox": "wxt build -b firefox",
+    "zip": "wxt zip",
+    "zip:firefox": "wxt zip -b firefox",
+    "compile": "tsc --noEmit",
+    "test": "vitest run",
+    "lint:firefox": "wxt build -b firefox && web-ext lint -s .output/firefox-mv3",
+    "e2e:chromium": "wxt build && node e2e/chromium.mjs",
+    "e2e:firefox": "wxt build -b firefox && node e2e/firefox.mjs",
+    "e2e": "npm run e2e:chromium && npm run e2e:firefox",
+    "postinstall": "wxt prepare"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.16",
+    "highlight.js": "^11.12.0",
+    "marked": "^18.0.14",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "ts-fsrs": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@wxt-dev/module-react": "^1.2.2",
+    "happy-dom": "^20.14.5",
+    "playwright": "^1.63.0",
+    "puppeteer-core": "^25.12.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3",
+    "web-ext": "^10.7.0",
+    "wxt": "^0.21.4"
+  }
+}

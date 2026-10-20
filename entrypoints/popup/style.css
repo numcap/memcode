@@ -1,0 +1,131 @@
+html,
+body {
+  margin: 0;
+  background: var(--mc-bg);
+  color: var(--mc-text);
+  font-family: var(--mc-font);
+  font-size: 14px;
+}
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+.popup {
+  width: 320px;
+  min-height: 120px;
+  padding: 12px 14px 14px;
+}
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+}
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: var(--mc-accent);
+  color: var(--mc-accent-contrast);
+  font-size: 13px;
+  font-weight: 800;
+}
+.due-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px 12px;
+  border-radius: var(--mc-radius);
+  border: 1px solid var(--mc-border);
+  background: var(--mc-surface);
+}
+.due-number {
+  font-size: 40px;
+  font-weight: 750;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.due-label {
+  margin-top: 2px;
+  color: var(--mc-muted);
+  font-size: 13px;
+}
+.start {
+  width: 100%;
+  margin-top: 12px;
+  padding: 9px 14px;
+  font-size: 14px;
+}
+.due-sub {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--mc-muted);
+}
+h2 {
+  margin: 14px 0 6px;
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mc-muted);
+}
+.recent {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.recent button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--mc-text);
+  font: 13px var(--mc-font);
+  text-align: left;
+  cursor: pointer;
+}
+.recent button:hover {
+  background: var(--mc-surface-2);
+}
+.recent-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.recent-source {
+  font-size: 11px;
+  color: var(--mc-muted);
+}
+.recent-when {
+  font-size: 12px;
+  color: var(--mc-muted);
+  white-space: nowrap;
+}
+.empty {
+  margin: 14px 2px 0;
+  font-size: 13px;
+  color: var(--mc-muted);
+}
+footer {
+  display: flex;
+  margin-top: 12px;
+}
+footer .mc-btn {
+  flex: 1;
+}

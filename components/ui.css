@@ -1,0 +1,179 @@
+/* Shared component styles used on extension pages and in the capture overlay. */
+.mc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--mc-border);
+  background: var(--mc-surface);
+  color: var(--mc-text);
+  font: 500 13px/1.2 var(--mc-font);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.mc-btn:hover {
+  background: var(--mc-surface-2);
+}
+.mc-btn:focus-visible,
+.mc-rating:focus-visible {
+  outline: 2px solid var(--mc-accent);
+  outline-offset: 2px;
+}
+.mc-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.mc-btn-primary {
+  background: var(--mc-accent);
+  border-color: var(--mc-accent);
+  color: var(--mc-accent-contrast);
+}
+.mc-btn-primary:hover {
+  background: var(--mc-accent);
+  filter: brightness(1.08);
+}
+.mc-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--mc-muted);
+}
+.mc-btn-ghost:hover {
+  color: var(--mc-text);
+}
+.mc-btn-danger {
+  color: var(--mc-again);
+}
+
+.mc-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font: 600 11px/1.5 var(--mc-font);
+  letter-spacing: 0.01em;
+  background: var(--mc-surface-2);
+  color: var(--mc-muted);
+  white-space: nowrap;
+}
+.mc-pill-easy {
+  color: var(--mc-easy-diff);
+  background: color-mix(in srgb, var(--mc-easy-diff) 14%, transparent);
+}
+.mc-pill-medium {
+  color: var(--mc-medium-diff);
+  background: color-mix(in srgb, var(--mc-medium-diff) 14%, transparent);
+}
+.mc-pill-hard {
+  color: var(--mc-hard-diff);
+  background: color-mix(in srgb, var(--mc-hard-diff) 14%, transparent);
+}
+
+.mc-ratings {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.mc-rating {
+  --tone: var(--mc-accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px 9px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--tone) 35%, var(--mc-border));
+  background: color-mix(in srgb, var(--tone) 8%, var(--mc-surface));
+  color: var(--mc-text);
+  font-family: var(--mc-font);
+  cursor: pointer;
+  transition: background 0.12s, transform 0.06s;
+}
+.mc-rating:hover {
+  background: color-mix(in srgb, var(--tone) 18%, var(--mc-surface));
+}
+.mc-rating:active {
+  transform: translateY(1px);
+}
+.mc-rating:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.mc-rating-1 {
+  --tone: var(--mc-again);
+}
+.mc-rating-2 {
+  --tone: var(--mc-hard);
+}
+.mc-rating-3 {
+  --tone: var(--mc-good);
+}
+.mc-rating-4 {
+  --tone: var(--mc-easy);
+}
+.mc-rating-label {
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--tone);
+}
+.mc-rating-interval {
+  font-size: 12px;
+  color: var(--mc-muted);
+  font-variant-numeric: tabular-nums;
+}
+.mc-rating-key {
+  font: 500 10px/1 var(--mc-mono);
+  color: var(--mc-muted);
+  opacity: 0.7;
+}
+.mc-rating-hint {
+  margin: 8px 0 0;
+  min-height: 1.4em;
+  font-size: 12px;
+  color: var(--mc-muted);
+  text-align: center;
+}
+
+.mc-textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 8px;
+  border: 1px solid var(--mc-border);
+  background: var(--mc-surface);
+  color: var(--mc-text);
+  font: 13px/1.5 var(--mc-font);
+  resize: vertical;
+}
+.mc-textarea:focus {
+  outline: none;
+  border-color: var(--mc-accent);
+  box-shadow: 0 0 0 3px var(--mc-accent-soft);
+}
+.mc-textarea-code {
+  font: 12px/1.5 var(--mc-mono);
+  background: var(--mc-code-bg);
+  tab-size: 4;
+}
+.site-access {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--mc-hard) 45%, var(--mc-border));
+  background: color-mix(in srgb, var(--mc-hard) 10%, var(--mc-surface));
+  font-size: 13px;
+}
+.mc-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mc-muted);
+}

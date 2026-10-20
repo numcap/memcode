@@ -1,0 +1,28 @@
+{
+  "data": {
+    "id": "two-integer-sum",
+    "tag": "NeetCode150",
+    "name": "Two Sum",
+    "description": "Given an array of integers `nums` and an integer `target`, return the indices `i` and `j` such that `nums[i] + nums[j] == target` and `i != j`.\n    \nYou may assume that *every* input has exactly one pair of indices `i` and `j` that satisfy the condition.\n\nReturn the answer with the smaller index first. \n\n**Example 1:**\n\n```java\nInput: \nnums = [3,4,5,6], target = 7\n\nOutput: [0,1]\n```\n\nExplanation: ",
+    "difficulty": "Easy",
+    "free": true,
+    "availableLanguages": [
+      "python",
+      "java",
+      "cpp",
+      "javascript",
+      "typescript",
+      "csharp",
+      "go",
+      "kotlin",
+      "swift",
+      "rust"
+    ],
+    "topics": [
+      "Array",
+      "Hash Table"
+    ],
+    "submissionCount": 1803967,
+    "acceptedCount": 1051660
+  }
+}
