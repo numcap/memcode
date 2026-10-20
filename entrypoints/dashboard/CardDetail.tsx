@@ -115,6 +115,7 @@ export function CardDetail({ id }: { id: string }) {
                 <span className="muted">
                   {new Date(entry.at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                 </span>
+                {entry.recall && <pre className="history-recall">{entry.recall}</pre>}
               </li>
             ))}
           </ol>

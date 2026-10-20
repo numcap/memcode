@@ -615,6 +615,17 @@ details.panel[open] > summary {
 .history li:last-child {
   border-bottom: 0;
 }
+.history-recall {
+  grid-column: 1 / -1;
+  margin: 2px 0 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--mc-code-bg);
+  font-family: var(--mc-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .history-rating {
   font-weight: 650;
 }

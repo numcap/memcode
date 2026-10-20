@@ -24,6 +24,7 @@ export function Review({ cardParam }: { cardParam: string | null }) {
   const [index, setIndex] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [recall, setRecall] = useState('');
   const [tally, setTally] = useState<Record<Rating, number>>({ 1: 0, 2: 0, 3: 0, 4: 0 });
 
   const start = useCallback(
@@ -41,6 +42,7 @@ export function Review({ cardParam }: { cardParam: string | null }) {
       setSession({ queue, mode, settings });
       setIndex(0);
       setRevealed(false);
+      setRecall('');
       setTally({ 1: 0, 2: 0, 3: 0, 4: 0 });
     },
     [cardParam],
@@ -62,16 +64,17 @@ export function Review({ cardParam }: { cardParam: string | null }) {
       if (!current || busy) return;
       setBusy(true);
       try {
-        await recordReview(current.id, rating);
+        await recordReview(current.id, rating, Date.now(), recall);
         setTally((t) => ({ ...t, [rating]: t[rating] + 1 }));
         setIndex((i) => i + 1);
         setRevealed(false);
+        setRecall('');
         window.scrollTo(0, 0);
       } finally {
         setBusy(false);
       }
     },
-    [current, busy],
+    [current, busy, recall],
   );
 
   useEffect(() => {
@@ -114,6 +117,8 @@ export function Review({ cardParam }: { cardParam: string | null }) {
         card={current}
         revealed={revealed}
         hideTags={session.settings.hideTagsOnFront}
+        recall={recall}
+        onRecallChange={setRecall}
         onReveal={() => setRevealed(true)}
       />
       {revealed && (
@@ -131,11 +136,15 @@ function ReviewCard({
   card,
   revealed,
   hideTags,
+  recall,
+  onRecallChange,
   onReveal,
 }: {
   card: Card;
   revealed: boolean;
   hideTags: boolean;
+  recall: string;
+  onRecallChange: (text: string) => void;
   onReveal: () => void;
 }) {
   const [tagsVisible, setTagsVisible] = useState(!hideTags);
@@ -190,7 +199,9 @@ function ReviewCard({
           className="mc-textarea scratch"
           rows={5}
           spellCheck={false}
-          placeholder="Think it through or jot your answer here. This scratch pad isn't saved."
+          value={recall}
+          onChange={(e) => onRecallChange(e.target.value)}
+          placeholder="Think it through or jot your answer here. It's saved with your rating so you can see how your thinking changes."
         />
       </section>
 

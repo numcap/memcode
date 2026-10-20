@@ -44,6 +44,8 @@ export interface ReviewEntry {
   rating: Rating;
   /** 'solve' = rated after an accepted submission, 'review' = rated in the review screen. */
   kind: 'solve' | 'review';
+  /** What you wrote in the review scratch pad before revealing the answer. */
+  recall?: string;
 }
 
 export interface Card extends Problem {

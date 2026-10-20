@@ -77,6 +77,14 @@ describe('capture', () => {
     expect(reviewed?.lastSeenAt).toBe(card.srs.due);
   });
 
+  it('stores trimmed recall text on review entries and omits it when blank', async () => {
+    const card = await upsertFromSolve({ problem, rating: 3, notes: '' }, t0);
+    const first = await recordReview(card.id, 3, t0 + 1, '  two pointers?\n');
+    expect(first?.reviewLog.at(-1)).toEqual({ at: t0 + 1, rating: 3, kind: 'review', recall: 'two pointers?' });
+    const second = await recordReview(card.id, 4, t0 + 2, '   ');
+    expect(second?.reviewLog.at(-1)).toEqual({ at: t0 + 2, rating: 4, kind: 'review' });
+  });
+
   it('applyReview is pure', async () => {
     const card = await upsertFromSolve({ problem, rating: 3, notes: '' }, t0);
     const snapshot = structuredClone(card);

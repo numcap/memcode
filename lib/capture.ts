@@ -47,11 +47,18 @@ export function applySolve(
   };
 }
 
-export function applyReview(card: Card, rating: Rating, retention: number, now = Date.now()): Card {
+export function applyReview(
+  card: Card,
+  rating: Rating,
+  retention: number,
+  now = Date.now(),
+  recall = '',
+): Card {
+  const text = recall.trim();
   return {
     ...card,
     srs: rate(card.srs, rating, retention, new Date(now)),
-    reviewLog: [...card.reviewLog, { at: now, rating, kind: 'review' }],
+    reviewLog: [...card.reviewLog, { at: now, rating, kind: 'review', ...(text && { recall: text }) }],
     lastSeenAt: now,
   };
 }
@@ -72,7 +79,12 @@ export async function upsertFromSolve(input: SolveInput, now = Date.now()): Prom
   return card;
 }
 
-export async function recordReview(id: string, rating: Rating, now = Date.now()): Promise<Card | undefined> {
+export async function recordReview(
+  id: string,
+  rating: Rating,
+  now = Date.now(),
+  recall = '',
+): Promise<Card | undefined> {
   const settings = await getSettings();
-  return updateCard(id, (card) => applyReview(card, rating, settings.retention, now));
+  return updateCard(id, (card) => applyReview(card, rating, settings.retention, now, recall));
 }
