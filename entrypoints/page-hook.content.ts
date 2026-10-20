@@ -10,6 +10,14 @@ export default defineContentScript({
   world: 'MAIN',
   runAt: 'document_start',
   main() {
+    // Firefox re-runs this in already-open tabs when the add-on reloads, but the page's
+    // JS world (and our earlier wrapper) survives. The existing wrapper keeps working, so
+    // don't wrap fetch/XHR a second time.
+    const installed = Symbol.for('memcode.pageHook');
+    const pageWindow = window as unknown as Record<symbol, boolean>;
+    if (pageWindow[installed]) return;
+    pageWindow[installed] = true;
+
     const inspector = new TrafficInspector();
 
     const report = (url: string, method: string, requestBody: string | undefined, responseText: string) => {

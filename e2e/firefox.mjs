@@ -41,7 +41,8 @@ const browser = await puppeteer.launch({
 
 try {
   console.log(`Testing in ${await browser.version()}`);
-  await browser.installExtension(path.join(ROOT, '.output/firefox-mv3'));
+  const EXT = path.join(ROOT, '.output/firefox-mv3');
+  const addonId = await browser.installExtension(EXT);
 
   const MOCK_PAGE = '<!doctype html><html><body><h1>mock problem page</h1></body></html>';
   const json = (body) => ({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
@@ -186,6 +187,35 @@ try {
   await page.evaluate(() => (location.href = '/popup.html'));
   await page.waitForSelector('.due-number', { timeout: 10000 });
   check('Popup renders', true, await page.$eval('.due-sub', (el) => el.textContent));
+
+  // ---- Reloading the add-on with a problem tab open ----
+  // Firefox kills the old content script but keeps its DOM, then injects the new one into
+  // the same tab; there must still be exactly one (working) floating button.
+  {
+    const tab = await mockedPage({
+      '/problems/two-sum/description/': { status: 200, contentType: 'text/html', body: MOCK_PAGE },
+      '/problems/two-sum/submit/': json({ submission_id: 777 }),
+      '/submissions/detail/777/v2/check/': json({ state: 'SUCCESS', ai_state: 'SUCCESS', status_code: 10, lang: 'python3' }),
+    });
+    await tab.goto('https://leetcode.com/problems/two-sum/description/');
+    await tab.waitForSelector('pierce/.mc-fab', { timeout: 15000 });
+    await browser.uninstallExtension(addonId);
+    await browser.installExtension(EXT);
+    await sleep(3000);
+    const hosts = () => tab.evaluate(() => document.querySelectorAll('memcode-capture').length);
+    check('Add-on reload: still one floating button in an open tab', (await hosts()) === 1);
+    await tab.evaluate(async () => {
+      await fetch('/problems/two-sum/submit/', { method: 'POST', body: JSON.stringify({ lang: 'python3', typed_code: 'x' }) });
+      await fetch('/submissions/detail/777/v2/check/');
+    });
+    await tab.waitForSelector('pierce/.mc-modal-title', { timeout: 15000 });
+    await (await tab.$('pierce/.mc-rating-3')).click();
+    await tab.waitForSelector('pierce/.mc-toast', { timeout: 5000 });
+    await (await tab.$('pierce/.mc-toast button[aria-label="Dismiss"]')).click();
+    await sleep(800);
+    const fabs = await tab.$$eval('pierce/.mc-fab', (els) => els.map((e) => e.textContent));
+    check('Add-on reload: capture still works and the button updates', fabs.length === 1 && /In MemCode/.test(fabs[0]), JSON.stringify(fabs));
+  }
 } finally {
   await browser.close();
 }

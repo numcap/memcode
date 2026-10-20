@@ -7,6 +7,8 @@ import './theme.css';
 import './ui.css';
 import './capture.css';
 
+const UI_TAG = 'memcode-capture';
+
 /**
  * Wires a site adapter to the page hook and mounts the capture UI. Call at
  * document_start so hook messages sent during page load (e.g. NeetCode's
@@ -38,8 +40,12 @@ export function startCapture(ctx: ContentScriptContext, adapter: SiteAdapter): v
     ctx.addEventListener(window, 'wxt:locationchange', (e) => callback(e.newUrl));
 
   const mount = async () => {
+    // When the add-on is reloaded or updated, Firefox unloads the old content script but
+    // leaves the DOM it created, then injects this one into the same tab. The old UI is
+    // dead (its React no longer runs), so clear it out rather than stacking a second one.
+    document.querySelectorAll(UI_TAG).forEach((el) => el.remove());
     const ui = await createShadowRootUi<Root>(ctx, {
-      name: 'memcode-capture',
+      name: UI_TAG,
       position: 'inline',
       anchor: 'body',
       append: 'last',
