@@ -15,9 +15,9 @@ const lcSubmit = (inspector: TrafficInspector, id = 1234567) =>
     pageUrl: LC_PAGE,
   });
 
-const lcCheck = (inspector: TrafficInspector, body: object, id = '1234567') =>
+const lcCheck = (inspector: TrafficInspector, body: object, id = '1234567', version: 'v1' | 'v2' = 'v1') =>
   inspector.inspect({
-    url: `/submissions/detail/${id}/check/`,
+    url: `/submissions/detail/${id}/${version === 'v2' ? 'v2/' : ''}check/`,
     method: 'GET',
     responseText: JSON.stringify(body),
     pageUrl: LC_PAGE,
@@ -40,6 +40,7 @@ describe('TrafficInspector: LeetCode', () => {
     const inspector = new TrafficInspector();
     expect(inspector.wants('/problems/two-sum/submit/', 'POST', LC_PAGE)).toBe(true);
     expect(inspector.wants('/submissions/detail/99/check/', 'GET', LC_PAGE)).toBe(true);
+    expect(inspector.wants('https://leetcode.com/submissions/detail/99/v2/check/', 'GET', LC_PAGE)).toBe(true);
     expect(inspector.wants('/problems/two-sum/interpret_solution/', 'POST', LC_PAGE)).toBe(false);
     expect(inspector.wants('/submissions/detail/runcode_1727_abc/check/', 'GET', LC_PAGE)).toBe(false);
     expect(inspector.wants('/graphql/', 'POST', LC_PAGE)).toBe(false);
@@ -73,6 +74,35 @@ describe('TrafficInspector: LeetCode', () => {
     const inspector = new TrafficInspector();
     lcSubmit(inspector);
     expect(lcCheck(inspector, { ...ACCEPTED, status_code: 11, status_msg: 'Wrong Answer' })).toBeNull();
+  });
+
+  // The Submit button now polls /v2/check/, whose responses add an AI-judge stage.
+  it('reports v2 submissions once the judge and AI judge have both finished', () => {
+    const inspector = new TrafficInspector();
+    lcSubmit(inspector);
+    expect(lcCheck(inspector, { state: 'PENDING' }, '1234567', 'v2')).toBeNull();
+    expect(lcCheck(inspector, { state: 'RUNNING_TESTS' }, '1234567', 'v2')).toBeNull();
+    expect(lcCheck(inspector, { ...ACCEPTED, ai_state: 'STARTED' }, '1234567', 'v2')).toBeNull();
+    expect(lcCheck(inspector, { ...ACCEPTED, ai_state: 'SUCCESS' }, '1234567', 'v2')).toMatchObject({
+      type: 'accepted',
+      slug: 'two-sum',
+      code: 'class Solution: ...',
+      submissionId: '1234567',
+    });
+  });
+
+  it('ignores v2 results that LeetCode would not show as Accepted', () => {
+    const failedTest = new TrafficInspector();
+    lcSubmit(failedTest);
+    expect(lcCheck(failedTest, { ...ACCEPTED, compare_result: '1110111' }, '1234567', 'v2')).toBeNull();
+
+    const restrictions = new TrafficInspector();
+    lcSubmit(restrictions);
+    expect(lcCheck(restrictions, { ...ACCEPTED, status_code: 50, ai_state: 'SUCCESS' }, '1234567', 'v2')).toBeNull();
+
+    const aiFailed = new TrafficInspector();
+    lcSubmit(aiFailed);
+    expect(lcCheck(aiFailed, { ...ACCEPTED, ai_state: 'FAILURE' }, '1234567', 'v2')).toBeNull();
   });
 
   it('falls back to the page slug when the submit request was missed', () => {

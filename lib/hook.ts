@@ -50,7 +50,8 @@ export interface Exchange {
 }
 
 const LC_SUBMIT = /^\/problems\/([^/]+)\/submit\/?$/;
-const LC_CHECK = /^\/submissions\/detail\/(\d+)\/check\/?$/;
+// The Submit button polls /v2/check/; the older /check/ is still used by other flows.
+const LC_CHECK = /^\/submissions\/detail\/(\d+)\/(?:v2\/)?check\/?$/;
 const NC_EXECUTE = /^\/api\/executeCodeFunctionHttp\/?$/;
 const NC_METADATA = /^\/api\/getProblemMetadataFunctionHttp\/?$/;
 
@@ -135,8 +136,14 @@ export class TrafficInspector {
   }
 }
 
+/** Mirrors how LeetCode's own client reads a check response. */
 export function isLeetcodeAccepted(res: any): boolean {
-  return res?.state === 'SUCCESS' && res.status_code === 10;
+  if (res?.state !== 'SUCCESS' || res.status_code !== 10) return false;
+  // LeetCode downgrades "Accepted" to Wrong Answer if any test case failed.
+  if (typeof res.compare_result === 'string' && res.compare_result.includes('0')) return false;
+  // v2 responses can carry an AI judge (e.g. for problem restrictions) that is still
+  // running after `state` is SUCCESS; the verdict isn't final until it finishes.
+  return res.ai_state == null || res.ai_state === 'SUCCESS';
 }
 
 export function isNeetcodeAccepted(data: any): boolean {

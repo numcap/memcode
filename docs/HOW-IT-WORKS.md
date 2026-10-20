@@ -224,20 +224,32 @@ browser                                         leetcode.com
   │   {lang, question_id, typed_code}  ─────────────► │
   │ ◄───────────────────────  {submission_id: 987654} │
   │                                                   │
-  │ GET /submissions/detail/987654/check/  ─────────► │  (repeated every ~second)
-  │ ◄─────────────────────────────  {state:"STARTED"} │
-  │ GET /submissions/detail/987654/check/  ─────────► │
-  │ ◄──────  {state:"SUCCESS", status_code:10, …}     │   10 = Accepted, 11 = Wrong Answer, …
+  │ GET /submissions/detail/987654/v2/check/  ──────► │  (repeated, backing off)
+  │ ◄───────────────────────  {state:"RUNNING_TESTS"} │
+  │ GET /submissions/detail/987654/v2/check/  ──────► │
+  │ ◄──  {state:"SUCCESS", ai_state:"STARTED", …}     │   judge done, AI judge still running
+  │ GET /submissions/detail/987654/v2/check/  ──────► │
+  │ ◄──  {state:"SUCCESS", ai_state:"SUCCESS",        │
+  │       status_code:10, compare_result:"111…", …}   │   10 = Accepted, 11 = Wrong Answer, …
 ```
 
 The **Run** button uses a different endpoint (`/interpret_solution/`) whose check IDs look like `runcode_…`. Our check-URL pattern only matches numeric IDs, so Run results never trigger the modal.
+
+**A lesson from the first real-world bug.** The first version of MemCode only knew the original `/submissions/detail/<id>/check/` URL. LeetCode's Submit button had since moved to `submitV2`, which polls `/v2/check/`. The hook saw every one of those requests, didn't recognize the URL, and ignored them, so no modal appeared on either browser. The mocked e2e tests didn't catch it because the mocks used the URL I *assumed*. The fix came from reading LeetCode's current bundle (the method in 4.5):
+
+- The route table has `submitResultV2: id => /submissions/detail/${id}/v2/check/`.
+- `onSubmitClicked` calls `submitV2`.
+- The client treats a result as final only when `state` is `SUCCESS` **and** the AI judge (`ai_state`) has finished.
+- It downgrades status 10 to Wrong Answer if `compare_result` contains a `0`.
+
+`isLeetcodeAccepted` now mirrors those rules exactly. The takeaway: **mocks only prove you handle the shape you wrote down.** Check them against the real thing when you can.
 
 ### 4.3 The `TrafficInspector`: a small state machine
 
 `lib/hook.ts` turns that traffic into at most one `accepted` event per submission:
 
 - On **submit**: remember `submission_id → { slug, lang, code }` in `pending`. The code comes from the *request* body, so we get exactly what you submitted.
-- On **check**: if the response is `state === 'SUCCESS' && status_code === 10` and this ID hasn't been `reported` yet, mark it reported and emit `{ type: 'accepted', slug, code, lang, runtime, memory }`.
+- On **check** (`/check/` or `/v2/check/`): if `isLeetcodeAccepted` says the verdict is a final Accepted (`state` SUCCESS, `status_code` 10, every test passed, AI judge finished) and this ID hasn't been `reported` yet, mark it reported and emit `{ type: 'accepted', slug, code, lang, runtime, memory }`.
 - **Polling dedupe:** the check endpoint is hit repeatedly (and could be re-polled later), so the `reported` set guarantees a single modal.
 - **Missed submit:** if the submit request wasn't seen (rare), we still emit, using the slug from the page URL and no code. The isolated script then fetches your latest accepted code over GraphQL.
 

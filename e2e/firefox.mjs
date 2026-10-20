@@ -32,8 +32,8 @@ const browser = await puppeteer.launch({
   browser: 'firefox',
   executablePath: FIREFOX_BIN,
   headless: true,
-  // -no-remote: don't hand off to an already-running Firefox.
-  args: ['-no-remote', '-remote-allow-system-access'],
+  // -new-instance/-no-remote: don't hand off to an already-running Firefox.
+  args: ['-new-instance', '-no-remote', '-remote-allow-system-access'],
   env: { ...process.env, MOZ_NO_REMOTE: '1' },
   userDataDir: mkdtempSync(path.join(tmpdir(), 'memcode-ff-')),
   extraPrefsFirefox: { 'extensions.webextensions.uuids': JSON.stringify({ 'memcode@memcode': UUID }) },
@@ -106,8 +106,9 @@ try {
     const page = await mockedPage({
       '/problems/two-sum/description/': { status: 200, contentType: 'text/html', body: MOCK_PAGE },
       '/problems/two-sum/submit/': json({ submission_id: 555 }),
-      '/submissions/detail/555/check/': json({
+      '/submissions/detail/555/v2/check/': json({
         state: 'SUCCESS',
+        ai_state: 'SUCCESS',
         status_code: 10,
         status_runtime: '1 ms',
         status_memory: '17 MB',
@@ -122,7 +123,7 @@ try {
         method: 'POST',
         body: JSON.stringify({ lang: 'python3', typed_code: 'class Solution:\n    pass' }),
       });
-      await fetch('/submissions/detail/555/check/');
+      await fetch('/submissions/detail/555/v2/check/');
     });
     await page.waitForSelector('pierce/.mc-modal-title', { timeout: 15000 });
     const title = await page.$eval('pierce/.mc-modal-title', (el) => el.textContent);

@@ -53,23 +53,21 @@ const logErrors = (page, label) => page.on('pageerror', (e) => console.log(`  [$
     r.fulfill({ contentType: 'text/html', body: FAKE_PAGE('Two Sum - LeetCode') }),
   );
   await page.route('https://leetcode.com/problems/two-sum/submit/', (r) => r.fulfill({ json: { submission_id: 987654 } }));
-  let polls = 0;
-  await page.route('https://leetcode.com/submissions/detail/987654/check/', (r) =>
-    r.fulfill({
-      json:
-        ++polls < 2
-          ? { state: 'STARTED' }
-          : {
-              status_code: 10,
-              lang: 'python3',
-              status_runtime: '0 ms',
-              status_memory: '18.1 MB',
-              status_msg: 'Accepted',
-              state: 'SUCCESS',
-              total_correct: 63,
-              total_testcases: 63,
-            },
-    }),
+  // The Submit button polls /v2/check/: judge first, then an AI-judge stage.
+  const ACCEPTED = {
+    status_code: 10,
+    lang: 'python3',
+    status_runtime: '0 ms',
+    status_memory: '18.1 MB',
+    status_msg: 'Accepted',
+    state: 'SUCCESS',
+    compare_result: '111111111111111111111111111111111111111111111111111111111111111',
+    total_correct: 63,
+    total_testcases: 63,
+  };
+  const polls = [{ state: 'RUNNING_TESTS' }, { ...ACCEPTED, ai_state: 'STARTED' }];
+  await page.route('https://leetcode.com/submissions/detail/987654/v2/check/', (r) =>
+    r.fulfill({ json: polls.shift() ?? { ...ACCEPTED, ai_state: 'SUCCESS' } }),
   );
   // GraphQL goes to the real LeetCode API (validates our query and the page-context fetch).
   await page.goto('https://leetcode.com/problems/two-sum/description/');
@@ -85,13 +83,13 @@ const logErrors = (page, label) => page.on('pageerror', (e) => console.log(`  [$
     const poll = () =>
       new Promise((resolve) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('GET', '/submissions/detail/987654/check/');
+        xhr.open('GET', '/submissions/detail/987654/v2/check/');
         xhr.onload = () => resolve(JSON.parse(xhr.responseText));
         xhr.send();
       });
     let res;
     do res = await poll();
-    while (res.state !== 'SUCCESS');
+    while (res.ai_state !== 'SUCCESS');
   }, PY_CODE);
 
   const modal = page.locator('.mc-modal');
@@ -117,7 +115,7 @@ const logErrors = (page, label) => page.on('pageerror', (e) => console.log(`  [$
   check('LeetCode: rating with key "3" saves and shows toast', /Saved Two Sum/.test(toastText), toastText);
 
   await page.locator('.mc-toast button[aria-label="Dismiss"]').click();
-  await page.evaluate(() => fetch('/submissions/detail/987654/check/'));
+  await page.evaluate(() => fetch('/submissions/detail/987654/v2/check/'));
   await page.waitForTimeout(800);
   check('LeetCode: repeated check poll does not re-open modal', (await page.locator('.mc-modal').count()) === 0);
   const fabText = (await page.locator('.mc-fab').innerText()).replace(/\n/g, ' ');
