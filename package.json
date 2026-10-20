@@ -17,6 +17,7 @@
     "e2e:chromium": "wxt build && node e2e/chromium.mjs",
     "e2e:firefox": "wxt build -b firefox && node e2e/firefox.mjs",
     "e2e": "npm run e2e:chromium && npm run e2e:firefox",
+    "screenshots": "wxt build && node scripts/screenshots.mjs",
     "postinstall": "wxt prepare"
   },
   "dependencies": {
