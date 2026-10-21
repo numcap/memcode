@@ -117,6 +117,7 @@ The library is your whole deck at a glance.
 - **Filter** by status (due or scheduled), site, difficulty and topic.
 - **Sort** by next due, longest unseen, **most forgotten** (lapses), recently added, or title.
 - Each row shows difficulty, topics, when you last saw the problem, when it's next due (overdue items are highlighted), reps and lapses.
+- **+ Add** (top right of every page, and in the toolbar popup) adds a problem without solving it on the site. Type a LeetCode number (`42`) or paste a LeetCode or NeetCode link, and the title, difficulty, topics and statement are filled in for you. For a problem from anywhere else (another site, a book, an interview), choose **Other** and fill in what you like. Add your key insight and code, then rate it like any other solve.
 
 ### 6. Card details and history
 
@@ -246,6 +247,8 @@ The deck is one file, `remcode.json`, in the same format as **Export JSON**, so 
 | `npm run lint:firefox` | Mozilla's add-on linter (what AMO runs) |
 | `npm run e2e` | End-to-end smoke tests in Chromium and Firefox |
 | `npm run screenshots` | Rebuild and regenerate the images in `docs/screenshots/` |
+
+The dev build is noticeably slower to open: its pages load every source file one by one from the Vite dev server on `localhost:3000`. A production build (`npm run build`, then reload the extension) opens the dashboard in well under 100 ms, even with hundreds of problems. Use it when you're using ReMCode rather than working on it.
 
 `npm run screenshots` loads the built extension in Playwright's Chromium, seeds a sample deck, and captures every screen in this README. It needs `npx playwright install chromium` once. The LeetCode page in the capture shots is a local stand-in with faked judge and GraphQL responses, so the script runs offline.
 

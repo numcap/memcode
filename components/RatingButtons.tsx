@@ -6,9 +6,11 @@ interface Props {
   intervals?: Record<Rating, number>;
   onRate: (rating: Rating) => void;
   disabled?: boolean;
+  /** Shown when no button is hovered. */
+  idleHint?: string;
 }
 
-export function RatingButtons({ intervals, onRate, disabled }: Props) {
+export function RatingButtons({ intervals, onRate, disabled, idleHint = 'Press 1–4 to rate' }: Props) {
   const [hovered, setHovered] = useState<Rating | null>(null);
   return (
     <div>
@@ -32,7 +34,7 @@ export function RatingButtons({ intervals, onRate, disabled }: Props) {
           </button>
         ))}
       </div>
-      <p className="mc-rating-hint">{hovered ? RATING_HINTS[hovered] : 'Press 1–4 to rate'}</p>
+      <p className="mc-rating-hint">{hovered ? RATING_HINTS[hovered] : idleHint}</p>
     </div>
   );
 }

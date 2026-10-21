@@ -1,10 +1,10 @@
-import { fetchPageJson } from './page-fetch';
+import { fetchPageJson, type JsonFetcher } from './page-fetch';
 import type { Difficulty, Problem, Submission } from './types';
 
-// Runs in the isolated content script on leetcode.com, so these are same-origin
-// requests that carry the user's session cookie.
-async function gql<T>(query: string, variables: Record<string, unknown>): Promise<T> {
-  const json = await fetchPageJson('/graphql', {
+// By default this runs in the isolated content script on leetcode.com, so requests are
+// same-origin and carry the user's session cookie. The dashboard passes remoteJson().
+async function gql<T>(query: string, variables: Record<string, unknown>, fetchJson: JsonFetcher = fetchPageJson): Promise<T> {
+  const json = await fetchJson('/graphql', {
     method: 'POST',
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', 'x-csrftoken': csrfToken() },
@@ -35,8 +35,8 @@ interface QuestionData {
   } | null;
 }
 
-export async function fetchLeetcodeProblem(slug: string): Promise<Problem> {
-  const { question: q } = await gql<QuestionData>(QUESTION_QUERY, { titleSlug: slug });
+export async function fetchLeetcodeProblem(slug: string, fetchJson?: JsonFetcher): Promise<Problem> {
+  const { question: q } = await gql<QuestionData>(QUESTION_QUERY, { titleSlug: slug }, fetchJson);
   if (!q) throw new Error(`LeetCode has no problem "${slug}"`);
   return {
     source: 'leetcode',
@@ -49,6 +49,24 @@ export async function fetchLeetcodeProblem(slug: string): Promise<Problem> {
     descriptionHtml: q.content ?? '',
     frontendId: q.questionFrontendId,
   };
+}
+
+// LeetCode's own search matches numbers as substrings ("1" finds 1, 191, 1139…),
+// so ask for a page of matches and pick the exact one.
+const NUMBER_QUERY = `query remcodeNumber($filters: QuestionListFilterInput) {
+  questionList(categorySlug: "", limit: 50, skip: 0, filters: $filters) {
+    data { questionFrontendId titleSlug }
+  }
+}`;
+
+interface NumberData {
+  questionList: { data: { questionFrontendId: string; titleSlug: string }[] } | null;
+}
+
+/** The slug for a problem number like "42", or undefined if there's no such problem. */
+export async function findLeetcodeSlug(frontendId: string, fetchJson?: JsonFetcher): Promise<string | undefined> {
+  const { questionList } = await gql<NumberData>(NUMBER_QUERY, { filters: { searchKeywords: frontendId } }, fetchJson);
+  return questionList?.data.find((q) => q.questionFrontendId === frontendId)?.titleSlug;
 }
 
 const SUBMISSIONS_QUERY = `query remcodeSubmissions($questionSlug: String!) {

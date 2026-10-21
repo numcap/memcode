@@ -1,4 +1,7 @@
-export type Source = 'leetcode' | 'neetcode';
+/** Sites ReMCode captures solves from automatically. */
+export type CaptureSite = 'leetcode' | 'neetcode';
+/** 'other' is a problem added by hand from anywhere else. */
+export type Source = CaptureSite | 'other';
 export type Difficulty = 'Easy' | 'Medium' | 'Hard' | 'Unknown';
 
 /** Anki-style grades: 1 Again, 2 Hard, 3 Good, 4 Easy. */
@@ -9,6 +12,7 @@ export interface Problem {
   source: Source;
   slug: string;
   title: string;
+  /** Empty for a problem added by hand without a link. */
   url: string;
   difficulty: Difficulty;
   tags: string[];
@@ -69,7 +73,7 @@ export interface Settings {
   /** 0 means unlimited. */
   maxReviewsPerDay: number;
   hideTagsOnFront: boolean;
-  autoPrompt: Record<Source, boolean>;
+  autoPrompt: Record<CaptureSite, boolean>;
   /** Dashboard and popup only; the on-page UI follows the site's own theme. */
   theme: ThemeChoice;
   /** Used by sync to pick the newer settings. */
