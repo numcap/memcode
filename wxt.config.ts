@@ -7,15 +7,16 @@ export default defineConfig({
   // which Firefox only supports in MV3 (128+).
   manifestVersion: 3,
   manifest: ({ browser }) => ({
-    name: 'MemCode',
+    name: 'ReMCode',
     description: 'Spaced repetition for the LeetCode and NeetCode problems you solve.',
     permissions: ['storage', 'unlimitedStorage', 'alarms'],
     // Declared explicitly so Firefox users can re-grant site access if they revoke it.
     host_permissions: SITE_MATCHES,
-    action: { default_title: 'MemCode' },
+    action: { default_title: 'ReMCode' },
     ...(browser === 'firefox' && {
       browser_specific_settings: {
         gecko: {
+          // From before the rename to ReMCode. Firefox ties stored data to this ID, so it stays.
           id: 'memcode@memcode',
           strict_min_version: '140.0',
           data_collection_permissions: { required: ['none'] },

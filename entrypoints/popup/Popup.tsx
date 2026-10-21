@@ -32,9 +32,9 @@ export function Popup() {
       <header className="popup-header">
         <div className="brand">
           <span className="brand-mark" aria-hidden>
-            M
+            R
           </span>
-          MemCode
+          ReMCode
         </div>
         <button type="button" className="mc-btn mc-btn-ghost" onClick={() => openDashboard('#/settings')}>
           Settings

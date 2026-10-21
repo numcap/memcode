@@ -341,7 +341,7 @@ const seeded = deck.filter((c) => c.id !== 'leetcode:two-sum');
 
 // ---------- Browser ----------
 
-const ctx = await chromium.launchPersistentContext(mkdtempSync(path.join(tmpdir(), 'memcode-shots-')), {
+const ctx = await chromium.launchPersistentContext(mkdtempSync(path.join(tmpdir(), 'remcode-shots-')), {
   channel: 'chromium',
   headless: true,
   viewport: { width: 1280, height: 820 },

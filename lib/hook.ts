@@ -5,7 +5,7 @@ import type { Source } from './types';
  * The page can forge these messages, so receivers only ever use them to open the
  * rating modal — nothing is saved without the user clicking a rating.
  */
-export const HOOK_SOURCE = 'memcode-hook';
+export const HOOK_SOURCE = 'remcode-hook';
 
 export interface NeetcodeMeta {
   id: string;

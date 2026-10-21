@@ -74,9 +74,7 @@ export async function upsertFromSolve(input: SolveInput, now = Date.now()): Prom
     getCard(cardId(input.problem.source, input.problem.slug)),
     getSettings(),
   ]);
-  const card = applySolve(existing, input, settings.retention, now);
-  await saveCard(card);
-  return card;
+  return saveCard(applySolve(existing, input, settings.retention, now), now);
 }
 
 export async function recordReview(

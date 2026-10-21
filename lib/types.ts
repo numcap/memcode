@@ -57,6 +57,8 @@ export interface Card extends Problem {
   reviewLog: ReviewEntry[];
   createdAt: number;
   lastSeenAt: number;
+  /** Last time anything on the card changed (notes, schedule, ...). Missing on older data; see changedAt(). */
+  updatedAt?: number;
 }
 
 export interface Settings {
@@ -66,12 +68,32 @@ export interface Settings {
   maxReviewsPerDay: number;
   hideTagsOnFront: boolean;
   autoPrompt: Record<Source, boolean>;
+  /** Used by sync to pick the newer settings. */
+  updatedAt?: number;
 }
 
 export interface ExportFile {
-  app: 'memcode';
-  version: 1;
+  app: 'remcode';
+  version: 1 | 2;
   exportedAt: number;
   settings: Settings;
   cards: Card[];
+  /** Card id -> when it was deleted, so a sync doesn't bring deleted cards back. Added in version 2. */
+  deleted?: Record<string, number>;
+}
+
+export interface GitHubConfig {
+  token: string;
+  owner: string;
+  repo: string;
+  /** Empty means the repo's default branch. */
+  branch?: string;
+  path: string;
+}
+
+export interface SyncStatus {
+  lastSyncAt?: number;
+  lastError?: string;
+  /** When lastError happened. */
+  errorAt?: number;
 }

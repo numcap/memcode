@@ -174,14 +174,14 @@ export function CaptureApp({ adapter, onLocationChange, subscribeAccepted }: Pro
           onClick={() => open(slug, 'manual')}
           title={
             savedHere
-              ? `In MemCode · next review ${dueLabel(savedHere.srs.due)} · click to re-rate`
-              : 'Save this problem to MemCode'
+              ? `In ReMCode · next review ${dueLabel(savedHere.srs.due)} · click to re-rate`
+              : 'Save this problem to ReMCode'
           }
         >
           <span className="mc-fab-mark" aria-hidden>
-            M
+            R
           </span>
-          <span className="mc-fab-text">{savedHere ? 'In MemCode' : 'Save to MemCode'}</span>
+          <span className="mc-fab-text">{savedHere ? 'In ReMCode' : 'Save to ReMCode'}</span>
         </button>
       )}
 
@@ -192,7 +192,7 @@ export function CaptureApp({ adapter, onLocationChange, subscribeAccepted }: Pro
             className="mc-modal"
             role="dialog"
             aria-modal="true"
-            aria-label="Save to MemCode"
+            aria-label="Save to ReMCode"
             tabIndex={-1}
             onKeyDown={onModalKeyDown}
           >
@@ -246,7 +246,7 @@ function DraftForm({
     <>
       <header className="mc-modal-header">
         <div className="mc-eyebrow">
-          {draft.trigger === 'accepted' ? <span className="mc-accepted">Accepted</span> : 'Save to MemCode'}
+          {draft.trigger === 'accepted' ? <span className="mc-accepted">Accepted</span> : 'Save to ReMCode'}
         </div>
         <h2 className="mc-modal-title">
           {problem.frontendId && <span className="mc-muted">{problem.frontendId}. </span>}

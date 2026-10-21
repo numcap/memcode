@@ -22,7 +22,7 @@ const check = (name, ok, detail = '') => {
 };
 
 const EXT = path.join(ROOT, '.output/chrome-mv3');
-const ctx = await chromium.launchPersistentContext(mkdtempSync(path.join(tmpdir(), 'memcode-')), {
+const ctx = await chromium.launchPersistentContext(mkdtempSync(path.join(tmpdir(), 'remcode-')), {
   channel: 'chromium',
   headless: true,
   viewport: { width: 1280, height: 860 },
@@ -119,7 +119,7 @@ const logErrors = (page, label) => page.on('pageerror', (e) => console.log(`  [$
   await page.waitForTimeout(800);
   check('LeetCode: repeated check poll does not re-open modal', (await page.locator('.mc-modal').count()) === 0);
   const fabText = (await page.locator('.mc-fab').innerText()).replace(/\n/g, ' ');
-  check('LeetCode: floating button reflects saved state', /In MemCode/.test(fabText), fabText);
+  check('LeetCode: floating button reflects saved state', /In ReMCode/.test(fabText), fabText);
   await page.close();
 }
 
@@ -277,7 +277,7 @@ const logErrors = (page, label) => page.on('pageerror', (e) => console.log(`  [$
     const api = globalThis.browser ?? globalThis.chrome;
     const all = await api.storage.local.get(null);
     return {
-      app: 'memcode',
+      app: 'remcode',
       version: 1,
       exportedAt: Date.now(),
       settings: all.settings,

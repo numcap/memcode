@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { exportData, importData, saveSettings } from '@/lib/storage';
 import type { Settings } from '@/lib/types';
 import { useCards, useSettings } from './hooks';
+import { SyncPanel } from './SyncPanel';
 
 export function SettingsPage() {
   const [settings, setSettings] = useSettings();
@@ -22,7 +23,7 @@ export function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `memcode-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `remcode-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     setMessage({ kind: 'ok', text: `Exported ${data.cards.length} cards.` });
@@ -96,7 +97,7 @@ export function SettingsPage() {
       <section className="panel">
         <h2>Capture</h2>
         <p className="setting-help">
-          Ask how hard a problem was as soon as a submission is accepted. The Save to MemCode button stays available either
+          Ask how hard a problem was as soon as a submission is accepted. The Save to ReMCode button stays available either
           way.
         </p>
         {(['leetcode', 'neetcode'] as const).map((site) => (
@@ -111,11 +112,14 @@ export function SettingsPage() {
         ))}
       </section>
 
+      <SyncPanel />
+
       <section className="panel">
         <h2>Your data</h2>
         <p className="setting-help">
-          Everything is stored only in this browser ({cards?.length ?? 0} cards). Export a backup now and then, or to move
-          to another browser. Importing merges by problem, and the copy seen more recently wins.
+          Your deck lives in this browser ({cards?.length ?? 0} cards), plus your GitHub repository if sync is on. Export a
+          backup now and then, or to move to another browser without sync. Importing merges by problem, and the copy
+          changed more recently wins.
         </p>
         <div className="data-actions">
           <button type="button" className="mc-btn" onClick={onExport}>

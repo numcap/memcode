@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getAllCards, getSettings, onCardsChanged, onSettingsChanged } from '@/lib/storage';
-import type { Card, Settings } from '@/lib/types';
+import {
+  getAllCards,
+  getGitHubConfig,
+  getSettings,
+  getSyncStatus,
+  onCardsChanged,
+  onSettingsChanged,
+  onSyncChanged,
+} from '@/lib/storage';
+import type { Card, GitHubConfig, Settings, SyncStatus } from '@/lib/types';
 
 export interface Route {
   name: 'review' | 'library' | 'card' | 'settings';
@@ -58,6 +66,18 @@ export function useSettings(): [Settings | null, (s: Settings) => void] {
     return onSettingsChanged(setSettings);
   }, []);
   return [settings, setSettings];
+}
+
+/** GitHub connection and last sync result; null while loading. */
+export function useSync(): { config: GitHubConfig | undefined; status: SyncStatus } | null {
+  const [sync, setSync] = useState<{ config: GitHubConfig | undefined; status: SyncStatus } | null>(null);
+  useEffect(() => {
+    const load = () =>
+      Promise.all([getGitHubConfig(), getSyncStatus()]).then(([config, status]) => setSync({ config, status }));
+    load();
+    return onSyncChanged(load);
+  }, []);
+  return sync;
 }
 
 /** Re-render periodically so "due"/"days ago" labels stay correct on a long-open tab. */

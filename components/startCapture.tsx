@@ -7,7 +7,7 @@ import './theme.css';
 import './ui.css';
 import './capture.css';
 
-const UI_TAG = 'memcode-capture';
+const UI_TAG = 'remcode-capture';
 
 /**
  * Wires a site adapter to the page hook and mounts the capture UI. Call at
