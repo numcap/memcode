@@ -579,7 +579,7 @@ Both builds come from the same source. These are the differences, and how each i
 |---|---|---|---|
 | Background | Service worker | Event page (`background.scripts`) | WXT emits the right form per browser |
 | MAIN-world content scripts | Since Chrome 111 | Since Firefox 128, **MV3 only** | MV3 for both builds (`manifestVersion: 3`) |
-| Add-on identity | ID derived from key/path | Needs `browser_specific_settings.gecko.id` | `memcode@memcode`, from when the project was called MemCode (it can't change after signing without losing data) |
+| Add-on identity | ID derived from key/path | Needs `browser_specific_settings.gecko.id` | `remcode@numcap` (it can't change after signing without losing data; the earlier `memcode@memcode` was retired) |
 | Store requirements | — | `data_collection_permissions` (Firefox 140+, Android 142+) | Declared `required: ['none']` |
 | Host permissions | Granted at install | User can withhold or revoke per site | `host_permissions` declared plus the **Allow access** banner |
 | Content-script `fetch` | Sent as the page | Can be sent with the **extension's** principal instead of the page's (this has varied across Firefox and manifest versions), so the page's `Origin`/`Referer` may be missing and CSRF checks can fail | `lib/page-fetch.ts` uses Firefox's `content.fetch`, which is documented to send as the page |

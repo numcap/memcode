@@ -36,7 +36,7 @@ const browser = await puppeteer.launch({
   args: ['-new-instance', '-no-remote', '-remote-allow-system-access'],
   env: { ...process.env, MOZ_NO_REMOTE: '1' },
   userDataDir: mkdtempSync(path.join(tmpdir(), 'remcode-ff-')),
-  extraPrefsFirefox: { 'extensions.webextensions.uuids': JSON.stringify({ 'memcode@memcode': UUID }) },
+  extraPrefsFirefox: { 'extensions.webextensions.uuids': JSON.stringify({ 'remcode@numcap': UUID }) },
 });
 
 try {
