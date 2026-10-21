@@ -114,7 +114,13 @@ export function SyncPanel() {
             autoComplete="off"
           />
           <button type="submit" className="mc-btn mc-btn-primary" disabled={busy}>
-            {busy ? 'Connecting…' : 'Connect'}
+            {busy ? (
+              <>
+                <span className="mc-spinner" aria-hidden /> Connecting…
+              </>
+            ) : (
+              'Connect'
+            )}
           </button>
         </form>
         <p className="setting-help">
@@ -154,7 +160,13 @@ export function SyncPanel() {
             })
           }
         >
-          {busy ? 'Syncing…' : 'Sync now'}
+          {busy ? (
+            <>
+              <span className="mc-spinner" aria-hidden /> Syncing…
+            </>
+          ) : (
+            'Sync now'
+          )}
         </button>
         <button type="button" className="mc-btn mc-btn-ghost" disabled={busy} onClick={() => run(clearGitHubConfig)}>
           Disconnect

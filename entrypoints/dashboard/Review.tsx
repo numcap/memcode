@@ -3,6 +3,7 @@ import { DifficultyPill } from '@/components/DifficultyPill';
 import { NotesEditor } from '@/components/NotesEditor';
 import { ProblemHtml } from '@/components/ProblemHtml';
 import { RatingButtons } from '@/components/RatingButtons';
+import { PageSkeleton } from '@/components/Skeleton';
 import { SubmissionView } from '@/components/SubmissionView';
 import { recordReview } from '@/lib/capture';
 import { daysSinceLabel, dueLabel, RATING_LABELS, sourceName } from '@/lib/format';
@@ -97,7 +98,7 @@ export function Review({ cardParam }: { cardParam: string | null }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [current, revealed, rate]);
 
-  if (!session) return <div className="page-loading">Loading…</div>;
+  if (!session) return <PageSkeleton variant="review" />;
 
   if (!current) {
     return <SessionEnd session={session} tally={tally} onStart={start} />;
@@ -222,9 +223,11 @@ function ReviewCard({
             <SubmissionView submissions={card.submissions} />
           </div>
           <div className="answer-links">
-            <a href={card.url} target="_blank" rel="noopener noreferrer">
-              Re-solve on {sourceName(card.source)} ↗
-            </a>
+            {card.url && (
+              <a href={card.url} target="_blank" rel="noopener noreferrer">
+                {card.source === 'other' ? 'Open link' : `Re-solve on ${sourceName(card.source)}`} ↗
+              </a>
+            )}
             <a href={cardHref(card.id)}>Card details</a>
           </div>
         </section>
@@ -257,6 +260,12 @@ function SessionEnd({
           Solve a problem on LeetCode or NeetCode. When it's accepted, ReMCode asks how hard it was and adds it here.
           You can also click <strong>Save to ReMCode</strong> at the bottom-left of any problem page.
         </p>
+        <p>Or add one yourself: by LeetCode number, by link, or any problem from anywhere.</p>
+        <div className="empty-actions">
+          <a className="mc-btn mc-btn-primary" href="#/add">
+            + Add a problem
+          </a>
+        </div>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import type { Rating, Source } from './types';
 
-const SOURCE_NAMES: Record<Source, string> = { leetcode: 'LeetCode', neetcode: 'NeetCode' };
+const SOURCE_NAMES: Record<Source, string> = { leetcode: 'LeetCode', neetcode: 'NeetCode', other: 'Other' };
 
 export function sourceName(source: Source): string {
   return SOURCE_NAMES[source];

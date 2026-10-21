@@ -5,13 +5,13 @@ import { daysSinceLabel, dueLabel, langName } from '@/lib/format';
 import { problemSlugFromPath, type AcceptedEvent, type HookEvent } from '@/lib/hook';
 import { previewIntervals } from '@/lib/srs';
 import { cardId, getCard, getSettings } from '@/lib/storage';
-import type { Card, Problem, Rating, Source, Submission } from '@/lib/types';
+import type { CaptureSite, Card, Problem, Rating, Submission } from '@/lib/types';
 import { DifficultyPill } from './DifficultyPill';
 import { Logo } from './Logo';
 import { RatingButtons } from './RatingButtons';
 
 export interface SiteAdapter {
-  site: Source;
+  site: CaptureSite;
   loadProblem(slug: string): Promise<Problem>;
   /** Best-effort code for when the hook didn't capture it (manual save, missed request). */
   loadLatestCode(slug: string): Promise<Submission | undefined>;
@@ -199,7 +199,9 @@ export function CaptureApp({ adapter, onLocationChange, subscribeAccepted }: Pro
             onKeyDown={onModalKeyDown}
           >
             {view.kind === 'loading' ? (
-              <div className="mc-modal-loading">Loading problem…</div>
+              <div className="mc-modal-loading">
+                <span className="mc-spinner" aria-hidden /> Loading problem…
+              </div>
             ) : (
               <DraftForm
                 view={view}
@@ -308,7 +310,7 @@ function DraftForm({
   );
 }
 
-function fallbackProblem(source: Source, slug: string): Problem {
+function fallbackProblem(source: CaptureSite, slug: string): Problem {
   return {
     source,
     slug,

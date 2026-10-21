@@ -4,9 +4,144 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ReMCode</title>
+    <!--
+      Loading skeleton styles live here, not in style.css, so the skeleton below is styled
+      before any script or bundled CSS loads. Colors fall back to neutral values until
+      theme.css defines the --mc-* tokens. components/Skeleton.tsx reuses these classes.
+    -->
+    <style>
+      html {
+        color-scheme: light dark;
+        background: #f5f5f9;
+      }
+      @media (prefers-color-scheme: dark) {
+        html {
+          background: #0e0e13;
+        }
+      }
+      body {
+        margin: 0;
+      }
+      .sk-boot-nav {
+        height: 51px;
+        border-bottom: 1px solid var(--mc-border, rgba(128, 128, 145, 0.18));
+      }
+      .sk-boot-page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 24px 16px;
+      }
+      /* Hidden at first: fast loads finish before it would appear. */
+      .sk-page {
+        opacity: 0;
+        animation: sk-in 0.2s ease-out 0.15s forwards;
+      }
+      .sk {
+        --sk-base: color-mix(in srgb, var(--mc-text, #8a8a99) 8%, transparent);
+        --sk-hi: color-mix(in srgb, var(--mc-text, #8a8a99) 16%, transparent);
+        flex: none;
+        max-width: 100%;
+        border-radius: 6px;
+        /* One gradient fixed to the viewport, so the shine sweeps across all bars together. */
+        background: linear-gradient(100deg, var(--sk-base) 42%, var(--sk-hi) 50%, var(--sk-base) 58%) 0 0 / 300vw 100% fixed;
+        animation: sk-sweep 1.6s linear infinite;
+      }
+      .sk-tiles {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+      .sk-tiles-6 {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        margin: 18px 0 0;
+      }
+      .sk-tile,
+      .sk-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        border-radius: 10px;
+        border: 1px solid var(--mc-border, rgba(128, 128, 145, 0.18));
+        background: var(--mc-surface, transparent);
+      }
+      .sk-tile {
+        padding: 14px;
+      }
+      .sk-tile-small {
+        gap: 8px;
+        padding: 10px 12px;
+      }
+      .sk-panel {
+        margin-top: 16px;
+        padding: 18px;
+      }
+      .sk-panel-tall {
+        min-height: 200px;
+      }
+      .sk-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 10px;
+        border-bottom: 1px solid var(--mc-border, rgba(128, 128, 145, 0.18));
+      }
+      .sk-row-gap {
+        height: 14px;
+      }
+      .sk-inline {
+        display: flex;
+        gap: 8px;
+      }
+      @keyframes sk-in {
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes sk-sweep {
+        from {
+          background-position: -200vw 0;
+        }
+        to {
+          background-position: 0 0;
+        }
+      }
+      @media (max-width: 720px) {
+        .sk-tiles {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .sk-tiles-6 {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .sk {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Replaced by React on its first render. -->
+      <div class="sk-boot" aria-hidden="true">
+        <div class="sk-boot-nav"></div>
+        <div class="sk-page sk-boot-page">
+          <div class="sk" style="width: 30%; height: 26px"></div>
+          <div class="sk-panel">
+            <div class="sk" style="width: 25%; height: 10px"></div>
+            <div class="sk" style="width: 90%; height: 12px"></div>
+            <div class="sk" style="width: 75%; height: 12px"></div>
+          </div>
+          <div class="sk-panel sk-panel-tall">
+            <div class="sk" style="width: 40%; height: 10px"></div>
+            <div class="sk" style="width: 85%; height: 12px"></div>
+            <div class="sk" style="width: 70%; height: 12px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="./main.tsx"></script>
   </body>
 </html>

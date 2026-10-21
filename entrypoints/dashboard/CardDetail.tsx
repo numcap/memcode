@@ -1,6 +1,7 @@
 import { DifficultyPill } from '@/components/DifficultyPill';
 import { NotesEditor } from '@/components/NotesEditor';
 import { ProblemHtml } from '@/components/ProblemHtml';
+import { PageSkeleton } from '@/components/Skeleton';
 import { SubmissionView } from '@/components/SubmissionView';
 import { daysSinceLabel, dueLabel, formatDate, RATING_LABELS, sourceName } from '@/lib/format';
 import { newSrsState } from '@/lib/srs';
@@ -10,7 +11,7 @@ import { useCards, useNow } from './hooks';
 export function CardDetail({ id }: { id: string }) {
   const { cards } = useCards();
   const now = useNow();
-  if (!cards) return <div className="page-loading">Loading…</div>;
+  if (!cards) return <PageSkeleton variant="detail" />;
   const card = cards.find((c) => c.id === id);
   if (!card) {
     return (
@@ -66,9 +67,11 @@ export function CardDetail({ id }: { id: string }) {
           <a className="mc-btn mc-btn-primary" href={`#/review?card=${encodeURIComponent(card.id)}`}>
             Review now
           </a>
-          <a className="mc-btn" href={card.url} target="_blank" rel="noopener noreferrer">
-            Open on {sourceName(card.source)} ↗
-          </a>
+          {card.url && (
+            <a className="mc-btn" href={card.url} target="_blank" rel="noopener noreferrer">
+              {card.source === 'other' ? 'Open link' : `Open on ${sourceName(card.source)}`} ↗
+            </a>
+          )}
           <button type="button" className="mc-btn" onClick={resetSchedule}>
             Reset schedule
           </button>

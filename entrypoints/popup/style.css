@@ -117,6 +117,7 @@ h2 {
 }
 footer {
   display: flex;
+  gap: 8px;
   margin-top: 12px;
 }
 footer .mc-btn {

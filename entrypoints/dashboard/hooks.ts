@@ -11,7 +11,7 @@ import {
 import type { Card, GitHubConfig, Settings, SyncStatus } from '@/lib/types';
 
 export interface Route {
-  name: 'review' | 'library' | 'card' | 'settings';
+  name: 'review' | 'library' | 'card' | 'settings' | 'add';
   param?: string;
   query: URLSearchParams;
 }
@@ -23,6 +23,7 @@ function parseHash(hash: string): Route {
   switch (name) {
     case 'library':
     case 'settings':
+    case 'add':
       return { name, query };
     case 'card':
       return param ? { name, param: decodeURIComponent(param), query } : { name: 'library', query };
