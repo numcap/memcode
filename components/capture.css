@@ -38,17 +38,28 @@
   transform: translateY(-1px);
 }
 .mc-fab-mark {
-  display: grid;
-  place-items: center;
+  position: relative;
+  display: block;
   width: 24px;
   height: 24px;
-  border-radius: 999px;
-  background: var(--mc-accent);
-  color: var(--mc-accent-contrast);
-  font: 800 12px/1 var(--mc-font);
 }
-.mc-fab-saved .mc-fab-mark {
+.mc-fab-mark svg {
+  display: block;
+}
+/* Saved problems get a small check on the logo. */
+.mc-fab-check {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  display: grid;
+  place-items: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 1.5px solid var(--mc-surface);
   background: var(--mc-good);
+  color: #fff;
+  font: 800 8px/1 var(--mc-font);
 }
 
 .mc-backdrop {

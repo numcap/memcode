@@ -112,13 +112,14 @@ describe('syncNow', () => {
       app: 'remcode',
       version: 2,
       exportedAt: now,
-      settings: { retention: 0.85, maxReviewsPerDay: 10, hideTagsOnFront: false, autoPrompt: { leetcode: true, neetcode: false }, updatedAt: now },
+      settings: { retention: 0.85, maxReviewsPerDay: 10, hideTagsOnFront: false, autoPrompt: { leetcode: true, neetcode: false }, theme: 'dark', updatedAt: now },
       cards: [makeCard('a', { notes: 'from elsewhere' }), makeCard('b')],
       deleted: {},
     });
     expect(await syncNow()).toEqual({ ok: true, pulled: 2, pushed: false });
     expect((await getCard('leetcode:a'))?.notes).toBe('from elsewhere');
     expect((await exportData()).settings.retention).toBe(0.85);
+    expect((await exportData()).settings.theme).toBe('dark');
   });
 
   it('propagates edits and deletions both ways', async () => {

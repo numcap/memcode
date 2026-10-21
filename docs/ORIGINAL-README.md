@@ -73,6 +73,6 @@ Both browsers use Manifest V3 from the same source. WXT generates a service-work
 | `npm run compile`                 | Type-check                                            |
 | `npm run lint:firefox`            | Mozilla's add-on linter (what AMO runs)               |
 | `npm run e2e`                     | End-to-end smoke tests in Chromium and Firefox        |
-| `node scripts/generate-icons.mjs` | Regenerate `public/icon/*.png`                        |
+| `node scripts/generate-icons.mjs` | Regenerate `public/icon/*.png` from the logo          |
 
 The end-to-end tests fake the judge responses but call the real LeetCode/NeetCode metadata APIs, so they need network access. `e2e/chromium.mjs` uses Playwright's Chromium (`npx playwright install chromium` once). `e2e/firefox.mjs` uses your installed Firefox over WebDriver BiDi; set `FIREFOX_BIN` if it isn't at `/Applications/Firefox.app`.

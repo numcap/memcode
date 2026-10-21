@@ -1,100 +1,38 @@
-// Renders the extension icon (a "code flashcard" on an indigo tile) to PNGs
-// without any image dependencies. Run: node scripts/generate-icons.mjs
-import { writeFileSync } from 'node:fs';
-import { deflateSync } from 'node:zlib';
+// Renders docs/logo/logo.svg to the extension icons in public/icon/, so the toolbar
+// icon always matches the logo. Run: node scripts/generate-icons.mjs
+//
+// Needs Playwright's Chromium once: npx playwright install chromium
+import { chromium } from 'playwright';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const INDIGO = [91, 91, 214];
-const WHITE = [255, 255, 255];
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SIZES = [16, 32, 48, 96, 128];
+const svg = readFileSync(path.join(ROOT, 'docs/logo/logo.svg'), 'utf8');
 
-// Painter's-order shapes in a unit square: [x0, y0, x1, y1, radius, color, alpha].
-const SHAPES = [
-  [0, 0, 1, 1, 0.22, INDIGO, 1],
-  [0.3, 0.16, 0.86, 0.64, 0.08, WHITE, 0.45],
-  [0.14, 0.34, 0.7, 0.84, 0.08, WHITE, 1],
-  [0.23, 0.46, 0.53, 0.53, 0.035, INDIGO, 1],
-  [0.31, 0.585, 0.61, 0.655, 0.035, INDIGO, 1],
-  [0.23, 0.71, 0.45, 0.78, 0.035, INDIGO, 1],
-];
+// At 16px the second card and thin strokes blur together, so the smallest icon drops
+// the back card and draws one bigger card with heavier code brackets.
+const SMALL_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#7676F2"/><stop offset="1" stop-color="#4646C0"/>
+  </linearGradient></defs>
+  <rect width="128" height="128" rx="28" fill="url(#bg)"/>
+  <rect x="14" y="24" width="100" height="80" rx="14" fill="#fff"/>
+  <g fill="none" stroke="#4F46E5" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M42 46 L26 64 L42 82"/><path d="M86 46 L102 64 L86 82"/><path d="M71 40 L57 88"/>
+  </g>
+</svg>`;
 
-function insideRoundedRect(x, y, [x0, y0, x1, y1, r]) {
-  if (x < x0 || x > x1 || y < y0 || y > y1) return false;
-  const cx = Math.min(Math.max(x, x0 + r), x1 - r);
-  const cy = Math.min(Math.max(y, y0 + r), y1 - r);
-  return (x - cx) ** 2 + (y - cy) ** 2 <= r * r;
+const browser = await chromium.launch({ channel: 'chromium' });
+const page = await browser.newPage();
+for (const size of SIZES) {
+  await page.setViewportSize({ width: size, height: size });
+  await page.setContent(
+    `<style>html,body{margin:0;background:transparent}svg{display:block}</style>` +
+      (size <= 16 ? SMALL_SVG : svg).replace('<svg ', `<svg width="${size}" height="${size}" `),
+  );
+  await page.screenshot({ path: path.join(ROOT, `public/icon/${size}.png`), omitBackground: true });
 }
-
-function render(size) {
-  const SS = 4; // supersampling per axis
-  const rgba = Buffer.alloc(size * size * 4);
-  for (let py = 0; py < size; py++) {
-    for (let px = 0; px < size; px++) {
-      let [r, g, b, a] = [0, 0, 0, 0];
-      for (let sy = 0; sy < SS; sy++) {
-        for (let sx = 0; sx < SS; sx++) {
-          const x = (px + (sx + 0.5) / SS) / size;
-          const y = (py + (sy + 0.5) / SS) / size;
-          let col = [0, 0, 0];
-          let alpha = 0;
-          for (const shape of SHAPES) {
-            if (!insideRoundedRect(x, y, shape)) continue;
-            const [, , , , , c, sa] = shape;
-            col = col.map((v, i) => v * (1 - sa) + c[i] * sa);
-            alpha = alpha * (1 - sa) + sa;
-          }
-          r += col[0] * alpha;
-          g += col[1] * alpha;
-          b += col[2] * alpha;
-          a += alpha;
-        }
-      }
-      const i = (py * size + px) * 4;
-      const n = SS * SS;
-      rgba[i] = a ? Math.round(r / a) : 0;
-      rgba[i + 1] = a ? Math.round(g / a) : 0;
-      rgba[i + 2] = a ? Math.round(b / a) : 0;
-      rgba[i + 3] = Math.round((a / n) * 255);
-    }
-  }
-  return encodePng(size, rgba);
-}
-
-function encodePng(size, rgba) {
-  const raw = Buffer.alloc((size * 4 + 1) * size);
-  for (let y = 0; y < size; y++) {
-    raw[y * (size * 4 + 1)] = 0; // filter: none
-    rgba.copy(raw, y * (size * 4 + 1) + 1, y * size * 4, (y + 1) * size * 4);
-  }
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
-  ihdr.set([8, 6, 0, 0, 0], 8); // 8-bit RGBA
-  return Buffer.concat([
-    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
-    chunk('IHDR', ihdr),
-    chunk('IDAT', deflateSync(raw)),
-    chunk('IEND', Buffer.alloc(0)),
-  ]);
-}
-
-function chunk(type, data) {
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length);
-  const body = Buffer.concat([Buffer.from(type), data]);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(body));
-  return Buffer.concat([len, body, crc]);
-}
-
-function crc32(buf) {
-  let c = ~0;
-  for (const byte of buf) {
-    c ^= byte;
-    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
-  }
-  return ~c >>> 0;
-}
-
-for (const size of [16, 32, 48, 96, 128]) {
-  writeFileSync(new URL(`../public/icon/${size}.png`, import.meta.url), render(size));
-}
-console.log('Wrote public/icon/{16,32,48,96,128}.png');
+await browser.close();
+console.log(`Wrote public/icon/{${SIZES.join(',')}}.png`);
