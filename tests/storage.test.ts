@@ -99,7 +99,7 @@ describe('export / import', () => {
     await saveCard(makeCard('kept', now, { lastSeenAt: now, notes: 'local newer' }), now);
     await saveCard(makeCard('stale', now, { lastSeenAt: now - 9 * DAY, notes: 'local older' }), now - 9 * DAY);
     const exported = await exportData();
-    expect(exported.app).toBe('memcode');
+    expect(exported.app).toBe('remcode');
     expect(exported.cards).toHaveLength(2);
 
     const result = await importData({
@@ -117,8 +117,8 @@ describe('export / import', () => {
     expect(await getAllCards()).toHaveLength(3);
   });
 
-  it('rejects files that are not MemCode exports', async () => {
-    await expect(importData({ cards: [] })).rejects.toThrow(/Not a MemCode export/);
+  it('rejects files that are not ReMCode exports', async () => {
+    await expect(importData({ cards: [] })).rejects.toThrow(/Not a ReMCode export/);
     await expect(importData(null)).rejects.toThrow();
   });
 });
@@ -143,8 +143,13 @@ describe('change tracking for sync', () => {
     expect(Object.keys(exported.deleted ?? {})).toEqual(['leetcode:a']);
   });
 
+  it('still imports exports from before the rename', async () => {
+    const result = await importData({ app: 'memcode', version: 2, exportedAt: now, settings: DEFAULT_SETTINGS, cards: [makeCard('a', now)] });
+    expect(result.added).toBe(1);
+  });
+
   it('still imports version 1 files', async () => {
-    const result = await importData({ app: 'memcode', version: 1, exportedAt: now, settings: DEFAULT_SETTINGS, cards: [makeCard('a', now)] });
+    const result = await importData({ app: 'remcode', version: 1, exportedAt: now, settings: DEFAULT_SETTINGS, cards: [makeCard('a', now)] });
     expect(result.added).toBe(1);
   });
 });

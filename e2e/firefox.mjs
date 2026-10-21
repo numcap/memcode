@@ -8,7 +8,7 @@
 //
 // Firefox only lets WebDriver into moz-extension:// pages with -remote-allow-system-access,
 // and even then refuses to navigate to them directly or send real input/screenshots there.
-// So MemCode opens its own dashboard tab (toast → Open), navigation inside it is by
+// So ReMCode opens its own dashboard tab (toast → Open), navigation inside it is by
 // location.hash, and keys are dispatched as DOM events. Real key handling is covered by
 // the Chromium smoke test.
 import puppeteer from 'puppeteer-core';
@@ -35,7 +35,7 @@ const browser = await puppeteer.launch({
   // -new-instance/-no-remote: don't hand off to an already-running Firefox.
   args: ['-new-instance', '-no-remote', '-remote-allow-system-access'],
   env: { ...process.env, MOZ_NO_REMOTE: '1' },
-  userDataDir: mkdtempSync(path.join(tmpdir(), 'memcode-ff-')),
+  userDataDir: mkdtempSync(path.join(tmpdir(), 'remcode-ff-')),
   extraPrefsFirefox: { 'extensions.webextensions.uuids': JSON.stringify({ 'memcode@memcode': UUID }) },
 });
 
@@ -202,7 +202,7 @@ try {
     await browser.uninstallExtension(addonId);
     await browser.installExtension(EXT);
     await sleep(3000);
-    const hosts = () => tab.evaluate(() => document.querySelectorAll('memcode-capture').length);
+    const hosts = () => tab.evaluate(() => document.querySelectorAll('remcode-capture').length);
     check('Add-on reload: still one floating button in an open tab', (await hosts()) === 1);
     await tab.evaluate(async () => {
       await fetch('/problems/two-sum/submit/', { method: 'POST', body: JSON.stringify({ lang: 'python3', typed_code: 'x' }) });
@@ -214,7 +214,7 @@ try {
     await (await tab.$('pierce/.mc-toast button[aria-label="Dismiss"]')).click();
     await sleep(800);
     const fabs = await tab.$$eval('pierce/.mc-fab', (els) => els.map((e) => e.textContent));
-    check('Add-on reload: capture still works and the button updates', fabs.length === 1 && /In MemCode/.test(fabs[0]), JSON.stringify(fabs));
+    check('Add-on reload: capture still works and the button updates', fabs.length === 1 && /In ReMCode/.test(fabs[0]), JSON.stringify(fabs));
   }
 } finally {
   await browser.close();

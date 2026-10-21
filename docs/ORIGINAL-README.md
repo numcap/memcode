@@ -1,6 +1,6 @@
-# MemCode
+# ReMCode
 
-A browser extension for Chrome and Firefox that does spaced repetition on the LeetCode and NeetCode problems you've solved. When a submission is accepted, MemCode asks how hard it was (Again / Hard / Good / Easy, like Anki). It saves the problem, your code, and a short "key insight" note, then schedules reviews with [FSRS](https://github.com/open-spaced-repetition/ts-fsrs). Reviews are active recall: you look at the problem, recall the pattern and code, then reveal your notes and solution. You don't solve problems inside the extension.
+A browser extension for Chrome and Firefox that does spaced repetition on the LeetCode and NeetCode problems you've solved. When a submission is accepted, ReMCode asks how hard it was (Again / Hard / Good / Easy, like Anki). It saves the problem, your code, and a short "key insight" note, then schedules reviews with [FSRS](https://github.com/open-spaced-repetition/ts-fsrs). Reviews are active recall: you look at the problem, recall the pattern and code, then reveal your notes and solution. You don't solve problems inside the extension.
 
 Everything is stored locally in the browser's extension storage. There is no account and no server. Each browser keeps its own deck; use **Settings → Export / Import** to move it between browsers.
 
@@ -40,7 +40,7 @@ For development, run `npm run dev` and load `.output/chrome-mv3-dev` instead. It
 
 The add-on ID is `memcode@memcode` (in `wxt.config.ts`). Change it before your first signing if you want your own; it can't change afterwards without losing data.
 
-If you've turned off the add-on's access to LeetCode or NeetCode (Add-ons → MemCode → Permissions), the popup and dashboard show an **Allow access** button.
+If you've turned off the add-on's access to LeetCode or NeetCode (Add-ons → ReMCode → Permissions), the popup and dashboard show an **Allow access** button.
 
 For development, `npm run dev:firefox` rebuilds `.output/firefox-mv3-dev` on save and uses web-ext to launch Firefox with the add-on loaded.
 
@@ -51,7 +51,7 @@ For development, `npm run dev:firefox` rebuilds `.output/firefox-mv3-dev` on sav
   - NeetCode: `POST /api/executeCodeFunctionHttp` (`status.description === "Accepted"`) and `/api/getProblemMetadataFunctionHttp`.
 
   On an Accepted result, the isolated content script opens a rating modal in a Shadow DOM. Problem details come from LeetCode GraphQL or NeetCode's metadata API. In Firefox those requests go through `content.fetch` so they're sent as the page (`lib/page-fetch.ts`).
-- **Manual save.** The **Save to MemCode** button at the bottom-left of a problem page saves or re-rates at any time. On LeetCode it uses your latest accepted submission. On NeetCode it uses your submission history, or the editor code NeetCode keeps in localStorage (`<slug>_<lang>_tabs`).
+- **Manual save.** The **Save to ReMCode** button at the bottom-left of a problem page saves or re-rates at any time. On LeetCode it uses your latest accepted submission. On NeetCode it uses your submission history, or the editor code NeetCode keeps in localStorage (`<slug>_<lang>_tabs`).
 - **Scheduling.** `lib/srs.ts` wraps ts-fsrs with minute-level learning steps turned off, so a first "Good" comes back in days rather than minutes. Intervals are capped at one year. Solving a problem again counts as a review.
 - **Review.** The dashboard (`dashboard.html`) has a review queue, a library, card details, and settings, including export/import. The toolbar badge shows how many reviews are due.
 

@@ -73,7 +73,7 @@ export interface Settings {
 }
 
 export interface ExportFile {
-  app: 'memcode';
+  app: 'remcode';
   version: 1 | 2;
   exportedAt: number;
   settings: Settings;

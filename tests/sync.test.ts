@@ -56,7 +56,7 @@ class FakeGitHub {
 
   fetch = async (url: string, init: RequestInit = {}): Promise<Response> => {
     const reply = (status: number, body: unknown) => new Response(JSON.stringify(body), { status });
-    if (!url.includes('/contents/memcode.json')) return reply(404, {});
+    if (!url.includes('/contents/remcode.json')) return reply(404, {});
     if (init.method !== 'PUT') {
       return this.text === null
         ? reply(404, { message: 'Not Found' })
@@ -84,7 +84,7 @@ beforeEach(async () => {
   fakeBrowser.reset();
   github = new FakeGitHub();
   vi.stubGlobal('fetch', github.fetch);
-  await saveGitHubConfig({ token: 't', owner: 'me', repo: 'deck', path: 'memcode.json' });
+  await saveGitHubConfig({ token: 't', owner: 'me', repo: 'deck', path: 'remcode.json' });
 });
 
 afterEach(() => {
@@ -109,7 +109,7 @@ describe('syncNow', () => {
 
   it('pulls the deck into an empty browser, settings included', async () => {
     github.push({
-      app: 'memcode',
+      app: 'remcode',
       version: 2,
       exportedAt: now,
       settings: { retention: 0.85, maxReviewsPerDay: 10, hideTagsOnFront: false, autoPrompt: { leetcode: true, neetcode: false }, updatedAt: now },
@@ -163,12 +163,12 @@ describe('syncNow', () => {
     expect(await getAllCards()).toHaveLength(2);
   });
 
-  it('refuses to overwrite a file that is not a MemCode deck', async () => {
+  it('refuses to overwrite a file that is not a ReMCode deck', async () => {
     github.text = '{"hello":"world"}';
     await saveCard(makeCard('a'));
     const result = await syncNow();
-    expect(result).toMatchObject({ ok: false, error: expect.stringMatching(/isn't a MemCode deck/) });
+    expect(result).toMatchObject({ ok: false, error: expect.stringMatching(/isn't a ReMCode deck/) });
     expect(github.text).toBe('{"hello":"world"}');
-    expect((await getSyncStatus()).lastError).toMatch(/isn't a MemCode deck/);
+    expect((await getSyncStatus()).lastError).toMatch(/isn't a ReMCode deck/);
   });
 });

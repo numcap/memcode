@@ -63,8 +63,8 @@ export function Library() {
         <div className="empty-state">
           <h1>No problems yet</h1>
           <p>
-            Solve a problem on LeetCode or NeetCode. When it's accepted, MemCode asks how hard it was and saves it here.
-            You can also click <strong>Save to MemCode</strong> at the bottom-left of any problem page.
+            Solve a problem on LeetCode or NeetCode. When it's accepted, ReMCode asks how hard it was and saves it here.
+            You can also click <strong>Save to ReMCode</strong> at the bottom-left of any problem page.
           </p>
         </div>
       ) : (

@@ -23,7 +23,7 @@ export function SettingsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `memcode-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `remcode-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     setMessage({ kind: 'ok', text: `Exported ${data.cards.length} cards.` });
@@ -97,7 +97,7 @@ export function SettingsPage() {
       <section className="panel">
         <h2>Capture</h2>
         <p className="setting-help">
-          Ask how hard a problem was as soon as a submission is accepted. The Save to MemCode button stays available either
+          Ask how hard a problem was as soon as a submission is accepted. The Save to ReMCode button stays available either
           way.
         </p>
         {(['leetcode', 'neetcode'] as const).map((site) => (

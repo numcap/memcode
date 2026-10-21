@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { checkRepo, fromBase64, getFile, putFile, SyncConflictError, toBase64 } from '@/lib/github';
 import type { GitHubConfig } from '@/lib/types';
 
-const config: GitHubConfig = { token: 't', owner: 'me', repo: 'deck', path: 'memcode.json' };
+const config: GitHubConfig = { token: 't', owner: 'me', repo: 'deck', path: 'remcode.json' };
 
 const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -27,7 +27,7 @@ describe('github client', () => {
     const fetch = stubFetch(() => json(404, { message: 'Not Found' }));
     expect(await getFile({ ...config, branch: 'sync' })).toBeNull();
     const [url, init] = fetch.mock.calls[0]!;
-    expect(url).toBe('https://api.github.com/repos/me/deck/contents/memcode.json?ref=sync');
+    expect(url).toBe('https://api.github.com/repos/me/deck/contents/remcode.json?ref=sync');
     expect((init.headers as Record<string, string>).Authorization).toBe('Bearer t');
     expect(init.cache).toBe('no-store');
   });

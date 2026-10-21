@@ -1,14 +1,14 @@
 <div align="center">
 
-<img src="docs/logo/logo.svg" alt="MemCode logo" width="96">
+<img src="docs/logo/logo.svg" alt="ReMCode logo" width="96">
 
-# MemCode
+# ReMCode
 
 **Spaced repetition for the LeetCode and NeetCode problems you've already solved.**
 
 A Chrome and Firefox extension that notices when a submission is accepted, saves the problem, your code and a one-line "key insight", and brings it back for review right before you'd forget it.
 
-<img src="docs/screenshots/capture-modal.png" alt="The MemCode rating modal over a LeetCode problem page right after an Accepted submission" width="860">
+<img src="docs/screenshots/capture-modal.png" alt="The ReMCode rating modal over a LeetCode problem page right after an Accepted submission" width="860">
 
 </div>
 
@@ -16,7 +16,7 @@ A Chrome and Firefox extension that notices when a submission is accepted, saves
 
 ## Why
 
-Solving 300 problems doesn't help much if you can't remember how you solved number 40. MemCode treats each solved problem like an Anki card. You rate how hard it was (**Again / Hard / Good / Easy**), and the [FSRS](https://github.com/open-spaced-repetition/ts-fsrs) algorithm schedules the next review, close to the point where you'd otherwise start to forget.
+Solving 300 problems doesn't help much if you can't remember how you solved number 40. ReMCode treats each solved problem like an Anki card. You rate how hard it was (**Again / Hard / Good / Easy**), and the [FSRS](https://github.com/open-spaced-repetition/ts-fsrs) algorithm schedules the next review, close to the point where you'd otherwise start to forget.
 
 Reviews are **active recall**, not re-solving. You read the problem, work out the pattern, the key invariant and a sketch of the code, then reveal your own notes and solution and rate yourself. A review takes a minute or two instead of twenty.
 
@@ -30,7 +30,7 @@ Reviews are **active recall**, not re-solving. You read the problem, work out th
 
 - [A tour of the app](#a-tour-of-the-app)
   - [1. Capture: rate a problem the moment it's accepted](#1-capture-rate-a-problem-the-moment-its-accepted)
-  - [2. Save to MemCode, any time](#2-save-to-memcode-any-time)
+  - [2. Save to ReMCode, any time](#2-save-to-remcode-any-time)
   - [3. The toolbar popup](#3-the-toolbar-popup)
   - [4. Review: recall first, then reveal](#4-review-recall-first-then-reveal)
   - [5. Library](#5-library)
@@ -66,11 +66,11 @@ A small toast confirms the save and tells you when the problem will come back. *
 
 The modal renders inside a Shadow DOM, so it never inherits or leaks styles, and it matches the site's light or dark theme on its own. Solving a problem that's already in your deck counts as a review: it reschedules the card, keeps your history, and saves the new code alongside the old (up to five submissions per problem).
 
-### 2. Save to MemCode, any time
+### 2. Save to ReMCode, any time
 
-<p align="center"><img src="docs/screenshots/fab.png" alt="The 'Save to MemCode' button in the bottom-left corner of a problem page" width="300"></p>
+<p align="center"><img src="docs/screenshots/fab.png" alt="The 'Save to ReMCode' button in the bottom-left corner of a problem page" width="300"></p>
 
-Every problem page gets a small **Save to MemCode** button in the bottom-left corner. Use it to add a problem you solved before installing MemCode, to re-rate one, or to save when the automatic prompt is turned off. On LeetCode it pulls your latest accepted submission. On NeetCode it uses your submission history, or falls back to the code in the editor. Once a problem is in your deck, the button changes to **In MemCode**.
+Every problem page gets a small **Save to ReMCode** button in the bottom-left corner. Use it to add a problem you solved before installing ReMCode, to re-rate one, or to save when the automatic prompt is turned off. On LeetCode it pulls your latest accepted submission. On NeetCode it uses your submission history, or falls back to the code in the editor. Once a problem is in your deck, the button changes to **In ReMCode**.
 
 ### 3. The toolbar popup
 
@@ -168,7 +168,7 @@ The dashboard and popup follow your system theme. The capture modal follows the 
 
 ## How scheduling works
 
-MemCode uses **FSRS** (Free Spaced Repetition Scheduler), the modern scheduler built into Anki. It models each card's *stability* (how long the memory lasts) and *difficulty*, and picks the next interval so that your chance of remembering the problem on that day matches your target retention.
+ReMCode uses **FSRS** (Free Spaced Repetition Scheduler), the modern scheduler built into Anki. It models each card's *stability* (how long the memory lasts) and *difficulty*, and picks the next interval so that your chance of remembering the problem on that day matches your target retention.
 
 A few choices are specific to coding problems:
 
@@ -213,7 +213,7 @@ If you've turned off the extension's access to LeetCode or NeetCode, the popup a
 
 ## Privacy and data
 
-- **Nothing leaves your browser** unless you turn on [GitHub sync](#sync-with-github), and then it only goes to your own repository. No account, no analytics, no MemCode server.
+- **Nothing leaves your browser** unless you turn on [GitHub sync](#sync-with-github), and then it only goes to your own repository. No account, no analytics, no ReMCode server.
 - The extension only **reads** the sites' judge traffic, so it can tell when a submission is accepted. It never changes requests or responses.
 - Problem details are fetched from LeetCode and NeetCode **as you**, using your existing session.
 - Problem statements are sanitized with DOMPurify before they're shown.
@@ -223,13 +223,13 @@ If you've turned off the extension's access to LeetCode or NeetCode, the popup a
 
 ## Sync with GitHub
 
-MemCode can keep your deck in a GitHub repository, so every browser you connect shares the same cards, notes and review history, and the repo's commit history records your progress.
+ReMCode can keep your deck in a GitHub repository, so every browser you connect shares the same cards, notes and review history, and the repo's commit history records your progress.
 
-1. Create a private repository (an empty one is fine), e.g. `you/memcode-deck`.
+1. Create a private repository (an empty one is fine), e.g. `you/remcode-deck`.
 2. Create a [fine-grained personal access token](https://github.com/settings/personal-access-tokens/new) with access to **only that repository** and the **Contents: Read and write** permission.
-3. In MemCode, open **Settings → GitHub sync**, enter the repository and token, and click **Connect**. Do the same in each other browser.
+3. In ReMCode, open **Settings → GitHub sync**, enter the repository and token, and click **Connect**. Do the same in each other browser.
 
-The deck is one file, `memcode.json`, in the same format as **Export JSON**, so you can also download it from GitHub and import it by hand. Changes are pushed about 30 seconds after you make them; other browsers' changes are pulled on browser startup, when the dashboard opens, and every 30 minutes. Each card merges on its own and the most recent change wins, so if you review the *same* problem in two browsers between syncs, only the later review is kept. The token is stored unencrypted in the browser's extension storage and is never exported or synced, which is why it should only have access to that one repo.
+The deck is one file, `remcode.json`, in the same format as **Export JSON**, so you can also download it from GitHub and import it by hand. Changes are pushed about 30 seconds after you make them; other browsers' changes are pulled on browser startup, when the dashboard opens, and every 30 minutes. Each card merges on its own and the most recent change wins, so if you review the *same* problem in two browsers between syncs, only the later review is kept. The token is stored unencrypted in the browser's extension storage and is never exported or synced, which is why it should only have access to that one repo.
 
 ---
 
@@ -263,5 +263,5 @@ docs/          deep-dive docs and screenshots
 
 ## Further reading
 
-- **[How MemCode works](docs/HOW-IT-WORKS.md):** a guided tour of the internals. It covers extension contexts and worlds, hooking `fetch`/`XMLHttpRequest`, LeetCode's judge protocol, Shadow DOM, FSRS, Chrome vs Firefox, and testing.
+- **[How ReMCode works](docs/HOW-IT-WORKS.md):** a guided tour of the internals. It covers extension contexts and worlds, hooking `fetch`/`XMLHttpRequest`, LeetCode's judge protocol, Shadow DOM, FSRS, Chrome vs Firefox, and testing.
 - **[Original README](docs/ORIGINAL-README.md):** the earlier, more technical README, with full Firefox signing steps, capture endpoints and e2e details.

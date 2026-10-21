@@ -1,6 +1,6 @@
-# How MemCode works
+# How ReMCode works
 
-A guide to every moving part of this extension, written for someone who already knows React, HTML, CSS and JavaScript. It spends its time on what's probably new to you: how browser extensions are put together, how MemCode notices a solve on someone else's website, the memory model behind the scheduling, and the cross-browser and testing problems that came up.
+A guide to every moving part of this extension, written for someone who already knows React, HTML, CSS and JavaScript. It spends its time on what's probably new to you: how browser extensions are put together, how ReMCode notices a solve on someone else's website, the memory model behind the scheduling, and the cross-browser and testing problems that came up.
 
 **How to use it.** Each section ends with a **Check yourself** block. Answer those questions in your head (or out loud) *before* you open the answers. Struggling to recall something is what makes it stick; that's the same idea the extension is built on. The final quiz mixes topics on purpose.
 
@@ -30,7 +30,7 @@ Code excerpts are simplified. The real files are linked so you can compare.
 
 ## 1. The 30-second version
 
-You submit a solution on LeetCode or NeetCode. MemCode is watching the site's network traffic from inside the page. When the judge's response says **Accepted**, MemCode pops up a modal asking how hard the problem was. Your rating, code and notes are saved to the browser's extension storage. A scheduling algorithm (FSRS) uses the rating to decide when you should see the problem again. When it's due, the dashboard shows you the problem, you try to recall the approach, reveal your own solution, and rate yourself again. Each rating reshapes the schedule.
+You submit a solution on LeetCode or NeetCode. ReMCode is watching the site's network traffic from inside the page. When the judge's response says **Accepted**, ReMCode pops up a modal asking how hard the problem was. Your rating, code and notes are saved to the browser's extension storage. A scheduling algorithm (FSRS) uses the rating to decide when you should see the problem again. When it's due, the dashboard shows you the problem, you try to recall the approach, reveal your own solution, and rate yourself again. Each rating reshapes the schedule.
 
 ```
  leetcode.com tab                                     extension
@@ -74,14 +74,14 @@ The browser loads those files from a special origin: `chrome-extension://<id>/` 
 
 This is the biggest mental shift from normal web development. An extension isn't one program. It's several pieces running in different places with different powers, and they talk by passing messages.
 
-| Context | MemCode file(s) | Lives… | Can use | Can't |
+| Context | ReMCode file(s) | Lives… | Can use | Can't |
 |---|---|---|---|---|
 | **Background** (a service worker in Chrome, an "event page" in Firefox) | `entrypoints/background.ts` | No DOM. Started on demand, killed when idle | All extension APIs: `action` (badge), `alarms`, `tabs`, `storage` | Touch any web page's DOM |
 | **Content script, isolated world** | `leetcode.content.tsx`, `neetcode.content.tsx` | Inside the web page, for as long as the tab lives | The page's **DOM**, `storage`, `runtime.sendMessage` | See the page's JS variables; use `tabs` or `action` |
 | **Content script, MAIN world** | `page-hook.content.ts` | Inside the page's own JS environment | Everything the page's JS can: patch `window.fetch`, etc. | **Any** extension API, not even storage |
 | **Extension pages** | `popup/`, `dashboard/` | Normal tabs or popups, served from the extension's origin | All extension APIs, plus a normal DOM for React | Read other sites' pages directly |
 
-MemCode needs all four. Most of the architecture comes from *which context is allowed to do what*.
+ReMCode needs all four. Most of the architecture comes from *which context is allowed to do what*.
 
 ### 2.3 Worlds: the most important concept in this project
 
@@ -93,13 +93,13 @@ A content script shares the **DOM** with the page but not its **JavaScript**. Ea
               └──────────────▲─────────────────▲────────────┘
                              │                 │
    ┌─────────────────────────┴───┐   ┌─────────┴───────────────────────┐
-   │ MAIN world (the page's)     │   │ ISOLATED world (MemCode's)      │
+   │ MAIN world (the page's)     │   │ ISOLATED world (ReMCode's)      │
    │ window.fetch  ← LeetCode    │   │ window.fetch  ← a different one │
    │   uses THIS one             │   │ browser.storage, runtime …      │
    └─────────────────────────────┘   └─────────────────────────────────┘
 ```
 
-**Why this matters for MemCode.** To see what LeetCode's code sends and receives, we have to replace *the page's* `fetch`. Replacing `window.fetch` in the isolated world does nothing to LeetCode, because LeetCode never calls that copy. So the hook must run in the **MAIN world**, but the MAIN world has no extension APIs and can't save anything. That's why capture is split in two:
+**Why this matters for ReMCode.** To see what LeetCode's code sends and receives, we have to replace *the page's* `fetch`. Replacing `window.fetch` in the isolated world does nothing to LeetCode, because LeetCode never calls that copy. So the hook must run in the **MAIN world**, but the MAIN world has no extension APIs and can't save anything. That's why capture is split in two:
 
 - `page-hook.content.ts` (`world: 'MAIN'`) observes traffic and announces "Accepted!"
 - `leetcode.content.tsx` (isolated) listens, fetches details, shows the UI and saves.
@@ -108,13 +108,13 @@ The isolation is a security feature. Without it, any website could call `chrome.
 
 ### 2.4 How the contexts talk
 
-| From → To | Mechanism | Where MemCode uses it |
+| From → To | Mechanism | Where ReMCode uses it |
 |---|---|---|
 | MAIN world → isolated world | `window.postMessage(msg, origin)`, both listen on the same `window` | The hook announcing an Accepted submission or NeetCode metadata |
 | Content script / page → background | `browser.runtime.sendMessage(msg)` | "Open the dashboard at this card" (content scripts can't open extension tabs) |
 | Anyone → anyone, via data | `storage.local.set` plus `storage.onChanged` | Save a card in the content script; the dashboard, popup and badge update themselves |
 
-**Trust.** `window.postMessage` is a public channel: *any* script on leetcode.com, including ads or a malicious script, can post `{ source: 'memcode-hook', … }`. So the isolated script treats those messages as hints, not commands. The worst a forged message can do is open the rating modal; nothing is saved unless you click a rating. Checking `e.source === window` and `e.origin === location.origin` filters out messages from iframes and other origins. See `components/startCapture.tsx`.
+**Trust.** `window.postMessage` is a public channel: *any* script on leetcode.com, including ads or a malicious script, can post `{ source: 'remcode-hook', … }`. So the isolated script treats those messages as hints, not commands. The worst a forged message can do is open the rating modal; nothing is saved unless you click a rating. Checking `e.source === window` and `e.origin === location.origin` filters out messages from iframes and other origins. See `components/startCapture.tsx`.
 
 > **Design rule worth keeping:** decide which side of a boundary is trusted, and make the untrusted side only able to *ask*.
 
@@ -146,14 +146,14 @@ What that means in practice:
 | Change events | `storage` event, other tabs only | `storage.onChanged` everywhere |
 | Cleared when | The user clears site data | The extension is uninstalled |
 
-MemCode uses **both**, for different things. Its own data lives in `storage.local`. It *reads* NeetCode's `localStorage` (from the content script, which shares the page's origin) to grab the code in NeetCode's editor.
+ReMCode uses **both**, for different things. Its own data lives in `storage.local`. It *reads* NeetCode's `localStorage` (from the content script, which shares the page's origin) to grab the code in NeetCode's editor.
 
 <details>
 <summary><b>Check yourself (section 2)</b></summary>
 
 1. Why can't the network hook live in the same file as the code that saves cards?
-2. The background needs to update the badge when a card becomes due at 3 a.m. Why does `setInterval` fail here, and what does MemCode use instead?
-3. A hostile ad script on leetcode.com posts a fake `{source:'memcode-hook', event:{type:'accepted', …}}`. What's the worst that happens, and why?
+2. The background needs to update the badge when a card becomes due at 3 a.m. Why does `setInterval` fail here, and what does ReMCode use instead?
+3. A hostile ad script on leetcode.com posts a fake `{source:'remcode-hook', event:{type:'accepted', …}}`. What's the worst that happens, and why?
 
 **Answers**
 1. Patching LeetCode's `fetch` requires the MAIN world, which has no extension APIs. Saving requires `storage`, which only the isolated world (or extension pages) has.
@@ -235,7 +235,7 @@ browser                                         leetcode.com
 
 The **Run** button uses a different endpoint (`/interpret_solution/`) whose check IDs look like `runcode_…`. Our check-URL pattern only matches numeric IDs, so Run results never trigger the modal.
 
-**A lesson from the first real-world bug.** The first version of MemCode only knew the original `/submissions/detail/<id>/check/` URL. LeetCode's Submit button had since moved to `submitV2`, which polls `/v2/check/`. The hook saw every one of those requests, didn't recognize the URL, and ignored them, so no modal appeared on either browser. The mocked e2e tests didn't catch it because the mocks used the URL I *assumed*. The fix came from reading LeetCode's current bundle (the method in 4.5):
+**A lesson from the first real-world bug.** The first version of ReMCode only knew the original `/submissions/detail/<id>/check/` URL. LeetCode's Submit button had since moved to `submitV2`, which polls `/v2/check/`. The hook saw every one of those requests, didn't recognize the URL, and ignored them, so no modal appeared on either browser. The mocked e2e tests didn't catch it because the mocks used the URL I *assumed*. The fix came from reading LeetCode's current bundle (the method in 4.5):
 
 - The route table has `submitResultV2: id => /submissions/detail/${id}/v2/check/`.
 - `onSubmitClicked` calls `submitV2`.
@@ -262,7 +262,7 @@ Note that `TrafficInspector` touches **no DOM and no browser APIs**: it takes st
 Once the isolated script hears "accepted for `two-sum`," it needs the title, difficulty, tags and description. LeetCode serves those through **GraphQL**: one endpoint (`POST /graphql`) where the client sends a query listing exactly the fields it wants.
 
 ```graphql
-query memcodeQuestion($titleSlug: String!) {
+query remcodeQuestion($titleSlug: String!) {
   question(titleSlug: $titleSlug) {
     questionFrontendId title titleSlug content difficulty topicTags { name }
   }
@@ -319,11 +319,11 @@ The same approach works for almost any web app. **The network tab plus string-li
 If we added `<div class="modal">` straight into LeetCode's DOM, LeetCode's CSS would style it (maybe `.modal { display: none }`), and our CSS could break LeetCode. **Shadow DOM** prevents both:
 
 ```html
-<memcode-capture>               ← the "shadow host", a normal element in LeetCode's DOM
+<remcode-capture>               ← the "shadow host", a normal element in LeetCode's DOM
   #shadow-root (open)           ← a separate DOM tree with its own style scope
     <style>/* our CSS */</style>
     <div class="mc-theme mc-capture">…React renders here…</div>
-</memcode-capture>
+</remcode-capture>
 ```
 
 - Selectors outside don't match inside, and selectors inside don't match outside.
@@ -336,7 +336,7 @@ If we added `<div class="modal">` straight into LeetCode's DOM, LeetCode's CSS w
 
 LeetCode has global keyboard shortcuts. Typing "3" in our notes box shouldn't trigger anything in LeetCode. `isolateEvents: true` calls `stopPropagation()` on `keydown`/`keyup`/`keypress` at the shadow root, so the page never hears them.
 
-Related: when an event *does* leave a shadow root, it's **retargeted**. Outside listeners see `event.target` as the host element (`<memcode-capture>`), not the button inside. Shadow DOM hides its internals even from events.
+Related: when an event *does* leave a shadow root, it's **retargeted**. Outside listeners see `event.target` as the host element (`<remcode-capture>`), not the button inside. Shadow DOM hides its internals even from events.
 
 ### 5.3 Single-page apps and the navigation-timing bug
 
@@ -400,7 +400,7 @@ Here *t* is the days since the last review, w₂₀ is a decay parameter (0.1542
 - **Later reviews:** a *successful* review multiplies S by a factor that is larger when the card is easy (low D), when S is still small, and **when R was low at review time**. Recalling something you were close to forgetting strengthens it most; that's the "desirable difficulty" effect, built into the math. **Again** (a *lapse*) resets S to a much smaller post-lapse value and increments `lapses`.
 - **Difficulty** moves up after Again/Hard and down after Easy, and drifts back toward a default over time.
 
-FSRS's 21 parameters (w₀…w₂₀) were fit on hundreds of millions of real Anki reviews. MemCode uses the defaults; they could be personalized later from your review log.
+FSRS's 21 parameters (w₀…w₂₀) were fit on hundreds of millions of real Anki reviews. ReMCode uses the defaults; they could be personalized later from your review log.
 
 ### 6.3 From a retention target to an interval
 
@@ -412,7 +412,7 @@ With *r* = 0.9 that simplifies to **I = S**, so the interval equals the stabilit
 
 **Worked example (fuzz off, defaults):** a new card rated **Good** gets S ≈ 2.31, so an interval of about 2 days. ts-fsrs also enforces Again < Hard < Good < Easy by at least a day each, which is why the modal showed `1d / 2d / 3d / 8d`. Rate Good again on day 3 and S grows to about 14, then about 57, then about 196 days. Each success pushes the next review much further out.
 
-### 6.4 MemCode's choices (in `lib/srs.ts` and `lib/storage.ts`)
+### 6.4 ReMCode's choices (in `lib/srs.ts` and `lib/storage.ts`)
 
 | Choice | Why |
 |---|---|
@@ -490,7 +490,7 @@ Why not compare `lastSeenAt` alone? Editing notes or resetting a schedule doesn'
 
 ### 7.6 GitHub sync
 
-Sync is the same rule run automatically against one file in a GitHub repo, `memcode.json`, which has the export format. Four pieces:
+Sync is the same rule run automatically against one file in a GitHub repo, `remcode.json`, which has the export format. Four pieces:
 
 - **`lib/merge.ts`** (pure): `mergeDecks(local, remote)` keeps the newer copy of each card and says what to write locally and whether the remote needs a commit. "Did it change?" compares card ids, `changedAt`s, tombstones and the settings timestamp, never `exportedAt`, so an idle sync makes no commit.
 - **Tombstones.** If deleting a card just removed its key, the next sync would bring it back from GitHub. `deleteCard` also records `deleted[id] = now`, and the merge drops any copy that isn't newer than its tombstone. Solving that problem again later makes a newer copy, which wins and clears the tombstone.
@@ -565,19 +565,19 @@ Problem statements are HTML from LeetCode (or Markdown from NeetCode, converted 
 
 Both builds come from the same source. These are the differences, and how each is handled:
 
-| Topic | Chrome | Firefox | What MemCode does |
+| Topic | Chrome | Firefox | What ReMCode does |
 |---|---|---|---|
 | Background | Service worker | Event page (`background.scripts`) | WXT emits the right form per browser |
 | MAIN-world content scripts | Since Chrome 111 | Since Firefox 128, **MV3 only** | MV3 for both builds (`manifestVersion: 3`) |
-| Add-on identity | ID derived from key/path | Needs `browser_specific_settings.gecko.id` | `memcode@memcode` (it can't change after signing without losing data) |
+| Add-on identity | ID derived from key/path | Needs `browser_specific_settings.gecko.id` | `memcode@memcode`, from when the project was called MemCode (it can't change after signing without losing data) |
 | Store requirements | — | `data_collection_permissions` (Firefox 140+, Android 142+) | Declared `required: ['none']` |
 | Host permissions | Granted at install | User can withhold or revoke per site | `host_permissions` declared plus the **Allow access** banner |
 | Content-script `fetch` | Sent as the page | Can be sent with the **extension's** principal instead of the page's (this has varied across Firefox and manifest versions), so the page's `Origin`/`Referer` may be missing and CSRF checks can fail | `lib/page-fetch.ts` uses Firefox's `content.fetch`, which is documented to send as the page |
 | Objects from the page | Plain cloned data | **Xray wrappers**: safe views of page objects | `startCapture` copies hook events with `JSON.parse(JSON.stringify(...))` |
-| Reloading or updating the add-on | Content scripts aren't injected into open tabs; old copies keep running and WXT shuts them down | The old script is killed **but its DOM stays**, and the new script is injected into open tabs. The page's JS world (and the old `fetch` wrapper) survives | `startCapture` removes leftover `<memcode-capture>` elements before mounting; the page hook installs once per page (`Symbol.for('memcode.pageHook')`) |
+| Reloading or updating the add-on | Content scripts aren't injected into open tabs; old copies keep running and WXT shuts them down | The old script is killed **but its DOM stays**, and the new script is injected into open tabs. The page's JS world (and the old `fetch` wrapper) survives | `startCapture` removes leftover `<remcode-capture>` elements before mounting; the page hook installs once per page (`Symbol.for('remcode.pageHook')`) |
 | Installing unsigned builds | "Load unpacked", permanent | "Temporary Add-on", **removed on restart along with its storage** | Sign an unlisted build for daily use (README) |
 
-**Xray vision, briefly.** In Firefox, when privileged code (a content script) touches an object that belongs to the page, it gets an *Xray wrapper*: it sees the object's real, native properties, but not anything page scripts may have redefined or monkey-patched. That protects extensions from pages that tamper with built-ins. The cost is that these wrappers sometimes behave unexpectedly when stored or passed on, so MemCode turns page-originated data into plain data of its own before using it.
+**Xray vision, briefly.** In Firefox, when privileged code (a content script) touches an object that belongs to the page, it gets an *Xray wrapper*: it sees the object's real, native properties, but not anything page scripts may have redefined or monkey-patched. That protects extensions from pages that tamper with built-ins. The cost is that these wrappers sometimes behave unexpectedly when stored or passed on, so ReMCode turns page-originated data into plain data of its own before using it.
 
 ---
 
@@ -585,7 +585,7 @@ Both builds come from the same source. These are the differences, and how each i
 
 ### 11.1 Functional core, imperative shell
 
-The code that's easiest to test is code that takes values and returns values. MemCode keeps the logic **pure** and pushes the messy parts (network, DOM, storage, the browser) to thin outer layers:
+The code that's easiest to test is code that takes values and returns values. ReMCode keeps the logic **pure** and pushes the messy parts (network, DOM, storage, the browser) to thin outer layers:
 
 | Pure core (unit tested) | Imperative shell (e2e tested) |
 |---|---|
@@ -615,7 +615,7 @@ Unit tests can't tell you whether the hook sees real requests, whether the Shado
 How each browser is driven:
 
 - **Chromium (`e2e/chromium.mjs`):** Playwright with its bundled Chromium plus `--load-extension`. Branded Google Chrome no longer accepts that flag, which is why Playwright's Chromium is used.
-- **Firefox (`e2e/firefox.mjs`):** the hardest part of the project. Playwright's patched Firefox can't attach to extension pages. Real Firefox driven over **WebDriver BiDi** (via `puppeteer-core`) only allows it with `-remote-allow-system-access`, and even then won't *navigate to* a `moz-extension://` URL, send real keystrokes, or take screenshots there. The workarounds: let MemCode open its own dashboard tab (toast → Open), navigate inside it by setting `location.hash`, and dispatch key events in the DOM. The real-keyboard paths are covered by the Chromium run.
+- **Firefox (`e2e/firefox.mjs`):** the hardest part of the project. Playwright's patched Firefox can't attach to extension pages. Real Firefox driven over **WebDriver BiDi** (via `puppeteer-core`) only allows it with `-remote-allow-system-access`, and even then won't *navigate to* a `moz-extension://` URL, send real keystrokes, or take screenshots there. The workarounds: let ReMCode open its own dashboard tab (toast → Open), navigate inside it by setting `location.hash`, and dispatch key events in the DOM. The real-keyboard paths are covered by the Chromium run.
 
 What none of the tests cover: a *real* logged-in submission. The judge responses are mocked from known shapes. The first real solve is the final check.
 
@@ -635,9 +635,9 @@ What none of the tests cover: a *real* logged-in submission. The judge responses
 | Symptom | Where to look |
 |---|---|
 | No modal after an Accepted submission | Page DevTools → **Network**: find the submit and check requests and compare their URLs and JSON with the regexes and fields in `lib/hook.ts`. If LeetCode changed the shape, update `TrafficInspector` and the tests in `tests/hook.test.ts`. |
-| No floating button at all | Is the content script running? DevTools → Console → the context dropdown (top-left, usually "top") lists **MemCode**, the isolated world, when it's injected. In Firefox, also check the add-on's site permissions. |
+| No floating button at all | Is the content script running? DevTools → Console → the context dropdown (top-left, usually "top") lists **ReMCode**, the isolated world, when it's injected. In Firefox, also check the add-on's site permissions. |
 | Modal shows the slug instead of the title | The GraphQL or metadata request failed and `fallbackProblem` kicked in. Check the Network tab for `/graphql` or `/api/getProblemMetadataFunctionHttp`. |
-| Badge wrong or stale | Chrome: `chrome://extensions` → MemCode → **service worker** (Inspect). Firefox: `about:debugging` → MemCode → **Inspect**. Run `await browser.storage.local.get(null)` there. |
+| Badge wrong or stale | Chrome: `chrome://extensions` → ReMCode → **service worker** (Inspect). Firefox: `about:debugging` → ReMCode → **Inspect**. Run `await browser.storage.local.get(null)` there. |
 | Want to see the raw data | In the dashboard tab's console: `await chrome.storage.local.get(null)` (or `browser.…` in Firefox). |
 | A UI change doesn't show | Rebuild (`npm run build`), then click **reload** on the extension *and* refresh the site tab. Content scripts don't hot-swap into tabs that are already open. |
 
@@ -689,7 +689,7 @@ The questions are mixed across sections on purpose. Answer each one before openi
 3. You raise desired retention from 0.90 to 0.95. Does your daily review count go up or down, and why?
 4. The modal is typed into while LeetCode's editor has global shortcuts. Which two mechanisms keep your keystrokes from reaching LeetCode?
 5. Why does the dashboard's review queue *not* update live from `storage.onChanged`, when the library does?
-6. In Firefox, MemCode fetches problem details with `content.fetch`. What problem would a plain `fetch` risk, and why is it a non-issue in Chrome?
+6. In Firefox, ReMCode fetches problem details with `content.fetch`. What problem would a plain `fetch` risk, and why is it a non-issue in Chrome?
 7. A card was last reviewed 5 days ago and has S = 5. Roughly what is R right now?
 8. Which functions would you unit test if you added support for a third site, and which part would need an e2e test?
 

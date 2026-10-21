@@ -149,7 +149,13 @@ export function onSettingsChanged(callback: (settings: Settings) => void): () =>
 
 export async function exportData(): Promise<ExportFile> {
   const [cards, settings, deleted] = await Promise.all([getAllCards(), getSettings(), getDeleted()]);
-  return { app: 'memcode', version: 2, exportedAt: Date.now(), settings, cards, deleted };
+  return { app: 'remcode', version: 2, exportedAt: Date.now(), settings, cards, deleted };
+}
+
+/** Exports made before the rename from MemCode say `app: 'memcode'`; they're still ours. */
+export function isDeckFile(file: unknown): file is Partial<ExportFile> & { cards: unknown[] } {
+  const f = file as { app?: unknown; cards?: unknown } | null;
+  return (f?.app === 'remcode' || f?.app === 'memcode') && Array.isArray(f.cards);
 }
 
 export interface ImportResult {
@@ -160,10 +166,8 @@ export interface ImportResult {
 
 /** Merges by card id; when both sides have a card, the one changed more recently wins. */
 export async function importData(data: unknown): Promise<ImportResult> {
-  const file = data as Partial<ExportFile>;
-  if (file?.app !== 'memcode' || !Array.isArray(file.cards)) {
-    throw new Error('Not a MemCode export file.');
-  }
+  if (!isDeckFile(data)) throw new Error('Not a ReMCode export file.');
+  const file = data;
   const existing = new Map((await getAllCards()).map((c) => [c.id, c]));
   const writes: Record<string, Card> = {};
   const result: ImportResult = { added: 0, updated: 0, skipped: 0 };

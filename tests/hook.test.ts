@@ -177,8 +177,8 @@ describe('helpers', () => {
   });
 
   it('validates hook messages', () => {
-    expect(isHookMessage({ source: 'memcode-hook', event: { type: 'accepted' } })).toBe(true);
+    expect(isHookMessage({ source: 'remcode-hook', event: { type: 'accepted' } })).toBe(true);
     expect(isHookMessage({ source: 'other', event: { type: 'accepted' } })).toBe(false);
-    expect(isHookMessage('memcode-hook')).toBe(false);
+    expect(isHookMessage('remcode-hook')).toBe(false);
   });
 });

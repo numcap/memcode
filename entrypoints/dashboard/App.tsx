@@ -16,7 +16,7 @@ export function App() {
   const dueCount = cards && settings ? buildQueue(cards, settings, now).length : 0;
 
   useEffect(() => {
-    document.title = dueCount ? `(${dueCount}) MemCode` : 'MemCode';
+    document.title = dueCount ? `(${dueCount}) ReMCode` : 'ReMCode';
   }, [dueCount]);
 
   // Pull what other browsers did before you start reviewing. No-op if sync isn't set up.
@@ -31,9 +31,9 @@ export function App() {
       <nav className="topnav">
         <a href="#/review" className="brand">
           <span className="brand-mark" aria-hidden>
-            M
+            R
           </span>
-          <span className="brand-text">MemCode</span>
+          <span className="brand-text">ReMCode</span>
         </a>
         <div className="nav-links">
           <a href="#/review" aria-current={route.name === 'review' ? 'page' : undefined}>

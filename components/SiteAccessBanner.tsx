@@ -20,7 +20,7 @@ export function SiteAccessBanner() {
   if (granted) return null;
   return (
     <div className="site-access" role="alert">
-      <span>MemCode needs access to LeetCode and NeetCode to notice accepted submissions.</span>
+      <span>ReMCode needs access to LeetCode and NeetCode to notice accepted submissions.</span>
       <button type="button" className="mc-btn mc-btn-primary" onClick={() => requestSiteAccess().then(setGranted)}>
         Allow access
       </button>

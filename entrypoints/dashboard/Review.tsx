@@ -254,8 +254,8 @@ function SessionEnd({
       <div className="empty-state">
         <h1>Your deck is empty</h1>
         <p>
-          Solve a problem on LeetCode or NeetCode. When it's accepted, MemCode asks how hard it was and adds it here.
-          You can also click <strong>Save to MemCode</strong> at the bottom-left of any problem page.
+          Solve a problem on LeetCode or NeetCode. When it's accepted, ReMCode asks how hard it was and adds it here.
+          You can also click <strong>Save to ReMCode</strong> at the bottom-left of any problem page.
         </p>
       </div>
     );

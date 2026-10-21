@@ -29,7 +29,7 @@ function makeCard(slug: string, updatedAt: number, overrides: Partial<Card> = {}
 }
 
 function deck(cards: Card[], extra: Partial<ExportFile> = {}): ExportFile {
-  return { app: 'memcode', version: 2, exportedAt: now, settings: DEFAULT_SETTINGS, cards, deleted: {}, ...extra };
+  return { app: 'remcode', version: 2, exportedAt: now, settings: DEFAULT_SETTINGS, cards, deleted: {}, ...extra };
 }
 
 const ids = (cards: Card[]) => cards.map((c) => c.id);

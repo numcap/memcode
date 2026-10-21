@@ -8,7 +8,7 @@ import type { GitHubConfig } from '@/lib/types';
 import { useNow, useSync } from './hooks';
 
 const TOKEN_URL = 'https://github.com/settings/personal-access-tokens/new';
-const DECK_PATH = 'memcode.json';
+const DECK_PATH = 'remcode.json';
 
 /** Accepts "owner/repo" or a github.com URL. */
 function parseRepo(input: string): { owner: string; repo: string } | null {
@@ -58,7 +58,7 @@ export function SyncPanel() {
     e.preventDefault();
     run(async () => {
       const parsed = parseRepo(repo);
-      if (!parsed) throw new Error('Enter the repository as owner/name, e.g. octocat/memcode-deck.');
+      if (!parsed) throw new Error('Enter the repository as owner/name, e.g. octocat/remcode-deck.');
       if (!token.trim()) throw new Error('Paste a GitHub token.');
       const next: GitHubConfig = { ...parsed, token: token.trim(), branch: branch.trim() || undefined, path: DECK_PATH };
       await checkRepo(next);

@@ -18,7 +18,7 @@ function csrfToken(): string {
   return document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/)?.[1] ?? '';
 }
 
-const QUESTION_QUERY = `query memcodeQuestion($titleSlug: String!) {
+const QUESTION_QUERY = `query remcodeQuestion($titleSlug: String!) {
   question(titleSlug: $titleSlug) {
     questionFrontendId title titleSlug content difficulty topicTags { name }
   }
@@ -51,13 +51,13 @@ export async function fetchLeetcodeProblem(slug: string): Promise<Problem> {
   };
 }
 
-const SUBMISSIONS_QUERY = `query memcodeSubmissions($questionSlug: String!) {
+const SUBMISSIONS_QUERY = `query remcodeSubmissions($questionSlug: String!) {
   questionSubmissionList(offset: 0, limit: 20, questionSlug: $questionSlug, status: 10) {
     submissions { id timestamp }
   }
 }`;
 
-const SUBMISSION_DETAILS_QUERY = `query memcodeSubmissionDetails($submissionId: Int!) {
+const SUBMISSION_DETAILS_QUERY = `query remcodeSubmissionDetails($submissionId: Int!) {
   submissionDetails(submissionId: $submissionId) {
     code timestamp runtimeDisplay memoryDisplay lang { name }
   }

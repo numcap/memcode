@@ -7,6 +7,7 @@ import {
   getGitHubConfig,
   getSyncStatus,
   isCardLike,
+  isDeckFile,
   saveSyncStatus,
 } from './storage';
 import type { ExportFile, GitHubConfig } from './types';
@@ -66,21 +67,19 @@ async function pullAndPush(config: GitHubConfig): Promise<SyncResult> {
   }
 }
 
-/** Refuses anything that isn't a MemCode deck rather than overwriting it. */
+/** Refuses anything that isn't a ReMCode deck rather than overwriting it. */
 function parseDeck(text: string): ExportFile {
-  let data: Partial<ExportFile>;
+  let data: unknown;
   try {
     data = JSON.parse(text);
   } catch {
     throw new Error("The file on GitHub isn't valid JSON, so it was left alone. Fix or delete it, then sync again.");
   }
-  if (data?.app !== 'memcode' || !Array.isArray(data.cards)) {
-    throw new Error("The file on GitHub isn't a MemCode deck, so it was left alone.");
-  }
+  if (!isDeckFile(data)) throw new Error("The file on GitHub isn't a ReMCode deck, so it was left alone.");
   const settings = { ...DEFAULT_SETTINGS, ...data.settings };
   settings.autoPrompt = { ...DEFAULT_SETTINGS.autoPrompt, ...data.settings?.autoPrompt };
   return {
-    app: 'memcode',
+    app: 'remcode',
     version: data.version ?? 1,
     exportedAt: data.exportedAt ?? 0,
     settings,

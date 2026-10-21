@@ -47,7 +47,7 @@ export function mergeDecks(local: ExportFile, remote: ExportFile | null, now = D
   const remoteSettingsNewer = !!remote && (remote.settings?.updatedAt ?? 0) > (local.settings.updatedAt ?? 0);
   const settings = remoteSettingsNewer ? remote.settings : local.settings;
 
-  const deck: ExportFile = { app: 'memcode', version: 2, exportedAt: now, settings, cards, deleted };
+  const deck: ExportFile = { app: 'remcode', version: 2, exportedAt: now, settings, cards, deleted };
   return {
     deck,
     localWrites,

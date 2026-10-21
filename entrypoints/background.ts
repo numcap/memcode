@@ -3,9 +3,9 @@ import { defineBackground } from 'wxt/utils/define-background';
 import { getReviewQueue, isDeckChange } from '@/lib/storage';
 import { syncNow } from '@/lib/sync';
 
-const BADGE_ALARM = 'memcode-badge';
-const SYNC_ALARM = 'memcode-sync';
-const SYNC_SOON_ALARM = 'memcode-sync-soon';
+const BADGE_ALARM = 'remcode-badge';
+const SYNC_ALARM = 'remcode-sync';
+const SYNC_SOON_ALARM = 'remcode-sync-soon';
 
 export default defineBackground(() => {
   const updateBadge = async () => {
@@ -18,7 +18,11 @@ export default defineBackground(() => {
     updateBadge();
     syncNow();
   };
-  browser.runtime.onInstalled.addListener(onLaunch);
+  browser.runtime.onInstalled.addListener(() => {
+    // Alarms outlive updates; this one is from before the rename to ReMCode.
+    browser.alarms.clear('memcode-badge');
+    onLaunch();
+  });
   browser.runtime.onStartup.addListener(onLaunch);
   // Cards become due as time passes, not only when storage changes.
   browser.alarms.create(BADGE_ALARM, { periodInMinutes: 15 });
