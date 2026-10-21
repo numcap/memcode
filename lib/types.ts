@@ -61,6 +61,8 @@ export interface Card extends Problem {
   updatedAt?: number;
 }
 
+export type ThemeChoice = 'system' | 'light' | 'dark';
+
 export interface Settings {
   /** FSRS target probability of recall at review time. */
   retention: number;
@@ -68,6 +70,8 @@ export interface Settings {
   maxReviewsPerDay: number;
   hideTagsOnFront: boolean;
   autoPrompt: Record<Source, boolean>;
+  /** Dashboard and popup only; the on-page UI follows the site's own theme. */
+  theme: ThemeChoice;
   /** Used by sync to pick the newer settings. */
   updatedAt?: number;
 }

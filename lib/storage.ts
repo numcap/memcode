@@ -14,6 +14,7 @@ export const DEFAULT_SETTINGS: Settings = {
   maxReviewsPerDay: 50,
   hideTagsOnFront: true,
   autoPrompt: { leetcode: true, neetcode: true },
+  theme: 'system',
 };
 
 export function cardId(source: Source, slug: string): string {

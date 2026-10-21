@@ -111,15 +111,8 @@ kbd {
   text-decoration: none;
 }
 .brand-mark {
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  background: var(--mc-accent);
-  color: var(--mc-accent-contrast);
-  font-size: 14px;
-  font-weight: 800;
+  display: block;
+  flex: none;
 }
 .nav-links {
   display: flex;

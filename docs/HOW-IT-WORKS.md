@@ -351,6 +351,8 @@ Content scripts declared in the manifest are injected on **real page loads** onl
 
 The modal should look native on a dark LeetCode and a light one. `detectPageTheme()` in `components/CaptureApp.tsx` reads the page's computed `background-color` and computes **relative luminance**, `0.2126·R + 0.7152·G + 0.0722·B`. The weights reflect how sensitive the eye is to each color (very sensitive to green, barely to blue). Below 128 counts as dark. This is cheaper and more reliable than knowing each site's theme class names.
 
+The extension's own pages work the other way round: they follow the OS through `@media (prefers-color-scheme: dark)` in `components/theme.css`, unless **Settings → Appearance** pins one. `components/pageTheme.ts` then sets `data-theme="light"` or `"dark"` on `<html>`, and the CSS checks that attribute before the media query. Settings load asynchronously, so the page would flash the OS theme first. To avoid that, the last choice is also kept in the page's `localStorage`, which can be read synchronously before React renders.
+
 <details>
 <summary><b>Check yourself (section 5)</b></summary>
 
@@ -624,7 +626,7 @@ What none of the tests cover: a *real* logged-in submission. The judge responses
 ## 12. Smaller things worth knowing
 
 - **`noUncheckedIndexedAccess`** (on in WXT's tsconfig): `arr[i]` and regex groups like `match[1]` are typed `T | undefined`, because an index can be out of range. That's why you'll see `match(...)?.[1]` and early returns like `if (!current) return …`. It catches real bugs, so it's worth keeping on.
-- **Writing a PNG by hand** (`scripts/generate-icons.mjs`): a PNG is an 8-byte signature followed by *chunks*, each `length | type | data | CRC32`. `IHDR` holds width, height and pixel format (8-bit RGBA). `IDAT` holds the pixels: each row is prefixed with a filter byte, then the whole thing is zlib-compressed. `IEND` ends the file. The icon shapes are rounded rectangles drawn with **supersampling** (4×4 samples per pixel, averaged) for anti-aliased edges, with no image library needed.
+- **Icons from the logo** (`scripts/generate-icons.mjs`): the toolbar icons are rendered from `docs/logo/logo.svg` in headless Chromium, so they always match the logo. At 16 px the second card and the thin `</>` blur together, so that size uses a simplified drawing with one card and heavier strokes. Small icons usually need their own design rather than a scaled-down large one. In the app, `components/Logo.tsx` draws the same mark inline; `useId` keeps its gradient ids unique.
 - **Node 22 via nvm:** WXT and Vitest need Node 22 or newer. `.nvmrc` pins it; `nvm use` in the repo switches to it.
 - **`unlimitedStorage` isn't infinite disk:** it only removes the extension's quota. A few thousand cards with code and descriptions is still just a few MB.
 
@@ -671,11 +673,12 @@ entrypoints/
 components/
   startCapture.tsx          message listener + Shadow DOM mount
   CaptureApp.tsx            floating button, rating modal, toast
+  Logo.tsx, pageTheme.ts    the logo mark; Light/Dark/System on extension pages
   RatingButtons, DifficultyPill, CodeBlock, ProblemHtml, SubmissionView, NotesEditor, SiteAccessBanner
   theme.css, ui.css, capture.css
 tests/                      vitest unit tests + real NeetCode fixture
 e2e/                        chromium.mjs (Playwright), firefox.mjs (WebDriver BiDi)
-scripts/generate-icons.mjs  hand-rolled PNG writer
+scripts/generate-icons.mjs  renders public/icon/*.png from docs/logo/logo.svg
 ```
 
 ---

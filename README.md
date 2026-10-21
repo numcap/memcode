@@ -142,12 +142,13 @@ Each problem has its own page with:
 | **Maximum reviews per day** | Caps the daily queue. Extra due cards wait until tomorrow. `0` means no limit. Default is 50. |
 | **Hide topics until reveal** | Keeps tags like "Dynamic Programming" off the front of the card. |
 | **Prompt on LeetCode / NeetCode** | Turns the automatic prompt on Accepted on or off for each site. The Save button works either way. |
+| **Theme** | System, Light or Dark for the dashboard and popup. The on-page modal always matches the site. |
 | **GitHub sync** | Keeps the deck in a GitHub repository you own, so all your browsers share it. See [Sync with GitHub](#sync-with-github). |
 | **Export / Import JSON** | Back up the whole deck, or move it to another browser. Import merges by problem, and the more recently changed copy wins. |
 
 ### 8. Light, dark and phone-sized
 
-The dashboard and popup follow your system theme. The capture modal follows the theme of the page it's on.
+The dashboard and popup follow your system theme, or pick **Light** or **Dark** under **Settings → Appearance**. The capture modal follows the theme of the page it's on.
 
 <table>
   <tr>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { browser } from 'wxt/browser';
 import { DifficultyPill } from '@/components/DifficultyPill';
+import { Logo } from '@/components/Logo';
 import { SiteAccessBanner } from '@/components/SiteAccessBanner';
 import { daysSinceLabel, dueLabel, sourceName } from '@/lib/format';
 import { buildQueue, getAllCards, getSettings, isDue } from '@/lib/storage';
@@ -31,9 +32,7 @@ export function Popup() {
     <div className="popup">
       <header className="popup-header">
         <div className="brand">
-          <span className="brand-mark" aria-hidden>
-            R
-          </span>
+          <Logo className="brand-mark" size={24} />
           ReMCode
         </div>
         <button type="button" className="mc-btn mc-btn-ghost" onClick={() => openDashboard('#/settings')}>

@@ -1,15 +1,17 @@
 /* Design tokens. Applied via the .mc-theme class so they work both on extension
-   pages and inside the content-script shadow root (where :root doesn't apply). */
+   pages and inside the content-script shadow root (where :root doesn't apply).
+   Light and dark follow the OS unless data-theme pins one (see pageTheme.ts).
+   The dark values appear twice below; keep both copies in sync. */
 .mc-theme {
-  --mc-bg: #f6f6f4;
+  --mc-bg: #f5f5f9;
   --mc-surface: #ffffff;
-  --mc-surface-2: #f0f0ed;
-  --mc-border: #e2e2de;
-  --mc-text: #1c1c1e;
-  --mc-muted: #6b6b72;
-  --mc-accent: #5b5bd6;
+  --mc-surface-2: #eeeef4;
+  --mc-border: #e2e2ec;
+  --mc-text: #18181f;
+  --mc-muted: #686878;
+  --mc-accent: #4f46e5;
   --mc-accent-contrast: #ffffff;
-  --mc-accent-soft: #ebebfb;
+  --mc-accent-soft: #eef0ff;
   --mc-again: #d14343;
   --mc-hard: #b7700a;
   --mc-good: #23915a;
@@ -17,7 +19,7 @@
   --mc-easy-diff: #138a7d;
   --mc-medium-diff: #b98100;
   --mc-hard-diff: #d14343;
-  --mc-code-bg: #f4f4f1;
+  --mc-code-bg: #f4f4f8;
   --mc-shadow: 0 12px 40px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
   --mc-radius: 10px;
   --mc-font: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -29,15 +31,15 @@
 }
 
 .mc-theme[data-theme='dark'] {
-  --mc-bg: #131315;
-  --mc-surface: #1b1b1e;
-  --mc-surface-2: #242428;
-  --mc-border: #313136;
-  --mc-text: #ececef;
-  --mc-muted: #9c9ca5;
-  --mc-accent: #8f8ff7;
-  --mc-accent-contrast: #121214;
-  --mc-accent-soft: #26263d;
+  --mc-bg: #0e0e13;
+  --mc-surface: #17171e;
+  --mc-surface-2: #1f1f28;
+  --mc-border: #2b2b37;
+  --mc-text: #ececf3;
+  --mc-muted: #9a9aac;
+  --mc-accent: #8b8cf8;
+  --mc-accent-contrast: #0e0e13;
+  --mc-accent-soft: #23234a;
   --mc-again: #ef6b6b;
   --mc-hard: #e0a03a;
   --mc-good: #4cc287;
@@ -45,22 +47,22 @@
   --mc-easy-diff: #3cc3b2;
   --mc-medium-diff: #e5b13a;
   --mc-hard-diff: #ef6b6b;
-  --mc-code-bg: #161618;
+  --mc-code-bg: #13131a;
   --mc-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   .mc-theme:not([data-theme='light']) {
-    --mc-bg: #131315;
-    --mc-surface: #1b1b1e;
-    --mc-surface-2: #242428;
-    --mc-border: #313136;
-    --mc-text: #ececef;
-    --mc-muted: #9c9ca5;
-    --mc-accent: #8f8ff7;
-    --mc-accent-contrast: #121214;
-    --mc-accent-soft: #26263d;
+    --mc-bg: #0e0e13;
+    --mc-surface: #17171e;
+    --mc-surface-2: #1f1f28;
+    --mc-border: #2b2b37;
+    --mc-text: #ececf3;
+    --mc-muted: #9a9aac;
+    --mc-accent: #8b8cf8;
+    --mc-accent-contrast: #0e0e13;
+    --mc-accent-soft: #23234a;
     --mc-again: #ef6b6b;
     --mc-hard: #e0a03a;
     --mc-good: #4cc287;
@@ -68,7 +70,7 @@
     --mc-easy-diff: #3cc3b2;
     --mc-medium-diff: #e5b13a;
     --mc-hard-diff: #ef6b6b;
-    --mc-code-bg: #161618;
+    --mc-code-bg: #13131a;
     --mc-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
     color-scheme: dark;
   }

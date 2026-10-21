@@ -1,6 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import { exportData, importData, saveSettings } from '@/lib/storage';
-import type { Settings } from '@/lib/types';
+import type { Settings, ThemeChoice } from '@/lib/types';
 import { useCards, useSettings } from './hooks';
 import { SyncPanel } from './SyncPanel';
 
@@ -91,6 +91,27 @@ export function SettingsPage() {
             checked={settings.hideTagsOnFront}
             onChange={(e) => update({ hideTagsOnFront: e.target.checked })}
           />
+        </label>
+      </section>
+
+      <section className="panel">
+        <h2>Appearance</h2>
+        <label className="setting">
+          <div>
+            <div className="setting-title">Theme</div>
+            <div className="setting-help">
+              For the dashboard and popup. On LeetCode and NeetCode, ReMCode matches the site's own theme.
+            </div>
+          </div>
+          <select
+            className="input"
+            value={settings.theme}
+            onChange={(e) => update({ theme: e.target.value as ThemeChoice })}
+          >
+            <option value="system">System</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
         </label>
       </section>
 

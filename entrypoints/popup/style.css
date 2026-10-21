@@ -30,15 +30,8 @@ body {
   font-size: 15px;
 }
 .brand-mark {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 7px;
-  background: var(--mc-accent);
-  color: var(--mc-accent-contrast);
-  font-size: 13px;
-  font-weight: 800;
+  display: block;
+  flex: none;
 }
 .due-box {
   display: flex;
