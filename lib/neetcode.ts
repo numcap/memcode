@@ -1,7 +1,7 @@
 import { marked } from 'marked';
 import { toNeetcodeMeta, type NeetcodeMeta } from './hook';
 import { toDifficulty } from './leetcode';
-import { fetchPageJson } from './page-fetch';
+import { fetchPageJson, type JsonFetcher } from './page-fetch';
 import type { Problem, Submission } from './types';
 
 const NEETCODE_LANGS = [
@@ -19,8 +19,8 @@ const NEETCODE_LANGS = [
 ];
 
 /** The same endpoint NeetCode's own page calls; it works without auth for problem content. */
-export async function fetchNeetcodeMeta(slug: string): Promise<NeetcodeMeta> {
-  const json = await fetchPageJson('/api/getProblemMetadataFunctionHttp', {
+export async function fetchNeetcodeMeta(slug: string, fetchJson: JsonFetcher = fetchPageJson): Promise<NeetcodeMeta> {
+  const json = await fetchJson('/api/getProblemMetadataFunctionHttp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ data: { problemId: slug } }),

@@ -177,3 +177,26 @@
   font-weight: 600;
   color: var(--mc-muted);
 }
+
+/* Inline busy indicator for buttons and small loading states; inherits the text color. */
+.mc-spinner {
+  display: inline-block;
+  flex: none;
+  width: 0.95em;
+  height: 0.95em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  opacity: 0.8;
+  animation: mc-spin 0.7s linear infinite;
+}
+@keyframes mc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mc-spinner {
+    animation-duration: 2s;
+  }
+}

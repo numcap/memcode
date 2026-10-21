@@ -1,4 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
+import { PageSkeleton } from '@/components/Skeleton';
 import { exportData, importData, saveSettings } from '@/lib/storage';
 import type { Settings, ThemeChoice } from '@/lib/types';
 import { useCards, useSettings } from './hooks';
@@ -9,7 +10,7 @@ export function SettingsPage() {
   const { cards } = useCards();
   const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
 
-  if (!settings) return <div className="page-loading">Loading…</div>;
+  if (!settings) return <PageSkeleton variant="panels" />;
 
   const update = (patch: Partial<Settings>) => {
     const next = { ...settings, ...patch };

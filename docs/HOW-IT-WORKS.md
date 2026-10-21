@@ -279,6 +279,8 @@ Because the content script runs *on* leetcode.com, this is a **same-origin** req
 
 `csrfToken()` in `lib/leetcode.ts` reads the cookie from `document.cookie` and copies it into the header, just as LeetCode's own frontend does. Servers also often check the `Origin`/`Referer` headers, which matters in Firefox (section 10).
 
+**The same queries from the dashboard.** **Add problem** (`entrypoints/dashboard/AddProblem.tsx`) looks problems up from an extension page, where there is no LeetCode page to act as. The functions in `lib/leetcode.ts` and `lib/neetcode.ts` take an optional fetcher. Content scripts get the default, `fetchPageJson`. The dashboard passes `remoteJson('https://leetcode.com')` from `lib/page-fetch.ts`, which makes a cross-origin request. CORS would normally block that, but an extension page may call any origin it has a **host permission** for. The request is sent with `credentials: 'omit'`: problem data is public, and without cookies LeetCode doesn't expect a CSRF token. To find a problem by number, `findLeetcodeSlug` uses LeetCode's own search (`questionList` with `searchKeywords`). That search matches substrings, so `1` also finds 191 and 1139, and the code picks the exact `questionFrontendId`. `lib/lookup.ts` parses what you type (a number, a link, or a bare slug), and its tests stub `fetch`.
+
 ### 4.5 How NeetCode was figured out (a method you can reuse)
 
 There's no documentation for NeetCode's internals, so I read its JavaScript:
@@ -540,6 +542,12 @@ Problem statements are HTML from LeetCode (or Markdown from NeetCode, converted 
 
 `highlight.js/lib/core` plus a hand-picked set of languages, instead of the full build with 190+ languages. A small `ALIASES` map translates site language IDs (`python3`, `golang`, `mysql`) to highlight.js grammar names.
 
+### 8.5 Loading states that don't flash
+
+Opening the dashboard takes 50–100 ms in a production build, almost all of it spent waiting for `browser.storage`. A "Loading…" message for that long reads as a flicker, not as progress. So `components/Skeleton.tsx` draws grey placeholders in the shape of the page, and they fade in only once 150 ms have passed since the page started loading. Fast loads go straight from a blank background to content. Slow ones (the dev server, a cold browser start) get a shimmering skeleton instead of a blank page.
+
+The page's HTML (`entrypoints/dashboard/index.html`) already contains a skeleton, styled by an inline `<style>`, so it can appear before any JavaScript or bundled CSS has loaded. It also sets the page background from `prefers-color-scheme`, so dark-mode users no longer see a white flash. Extension pages forbid inline *scripts* but allow inline *styles*. React replaces the static skeleton on its first render. Each React skeleton delays its fade by whatever is left of the 150 ms (`150 - performance.now()`), so it carries on from the static one without blinking.
+
 <details>
 <summary><b>Check yourself (section 8)</b></summary>
 
@@ -599,7 +607,7 @@ The code that's easiest to test is code that takes values and returns values. Re
 
 Note `now` as a parameter in many functions: time is an input, so tests can freeze it instead of being flaky around midnight.
 
-### 11.2 Unit tests (`npm test`, 55 tests)
+### 11.2 Unit tests (`npm test`, 64 tests)
 
 - **Vitest** with WXT's `WxtVitest()` plugin, which wires up `@/` aliases and replaces `browser` with **`fakeBrowser`**, an in-memory implementation of `browser.storage` and friends. `fakeBrowser.reset()` before each test gives a clean slate.
 - **happy-dom** provides `localStorage` and a DOM in Node for the NeetCode editor-code tests.
@@ -652,6 +660,7 @@ wxt.config.ts               manifest (per browser), permissions, MV3
 lib/
   types.ts                  Card, Problem, Submission, Settings, …
   srs.ts                    FSRS wrapper: newSrsState, rate, previewIntervals, (de)serialize
+  lookup.ts                 Add problem: parse a number or link, fetch it from the dashboard
   storage.ts                card:<id> keys, settings, tombstones, isDue/buildQueue, updateCard, export/import
   merge.ts                  mergeDecks (pure): per-card last-writer-wins + tombstones
   github.ts                 GitHub contents API: checkRepo, getFile, putFile (sha conflicts)
@@ -669,11 +678,12 @@ entrypoints/
   neetcode.content.tsx      isolated: NeetCode adapter (+ metadata cache) → startCapture
   background.ts             badge, alarms, sync triggers, open-dashboard
   popup/                    toolbar popup
-  dashboard/                App (routes), Review, Library, CardDetail, SettingsPage, SyncPanel, hooks
+  dashboard/                App (routes), Review, Library, CardDetail, AddProblem, SettingsPage, SyncPanel, hooks
 components/
   startCapture.tsx          message listener + Shadow DOM mount
   CaptureApp.tsx            floating button, rating modal, toast
   Logo.tsx, pageTheme.ts    the logo mark; Light/Dark/System on extension pages
+  Skeleton.tsx              loading placeholders (styles in dashboard/index.html)
   RatingButtons, DifficultyPill, CodeBlock, ProblemHtml, SubmissionView, NotesEditor, SiteAccessBanner
   theme.css, ui.css, capture.css
 tests/                      vitest unit tests + real NeetCode fixture

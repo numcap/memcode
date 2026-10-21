@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { DifficultyPill } from '@/components/DifficultyPill';
+import { PageSkeleton } from '@/components/Skeleton';
 import { daysSinceLabel, dueLabel, sourceName } from '@/lib/format';
 import { isDue, reviewsDoneToday } from '@/lib/storage';
 import type { Card, Difficulty, Source } from '@/lib/types';
@@ -46,7 +47,7 @@ export function Library() {
       .sort(SORTERS[sort]);
   }, [cards, query, source, difficulty, tag, status, sort, now]);
 
-  if (!cards) return <div className="page-loading">Loading…</div>;
+  if (!cards) return <PageSkeleton variant="library" />;
 
   const dueCount = cards.filter((c) => isDue(c, now)).length;
 
@@ -66,6 +67,12 @@ export function Library() {
             Solve a problem on LeetCode or NeetCode. When it's accepted, ReMCode asks how hard it was and saves it here.
             You can also click <strong>Save to ReMCode</strong> at the bottom-left of any problem page.
           </p>
+          <p>Or add one yourself: by LeetCode number, by link, or any problem from anywhere.</p>
+          <div className="empty-actions">
+            <a className="mc-btn mc-btn-primary" href="#/add">
+              + Add a problem
+            </a>
+          </div>
         </div>
       ) : (
         <>
@@ -87,6 +94,7 @@ export function Library() {
               <option value="all">All sites</option>
               <option value="leetcode">LeetCode</option>
               <option value="neetcode">NeetCode</option>
+              <option value="other">Other</option>
             </select>
             <select
               className="input"

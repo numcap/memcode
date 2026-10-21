@@ -3,6 +3,7 @@ import { browser } from 'wxt/browser';
 import { Logo } from '@/components/Logo';
 import { SiteAccessBanner } from '@/components/SiteAccessBanner';
 import { buildQueue } from '@/lib/storage';
+import { AddProblem } from './AddProblem';
 import { CardDetail } from './CardDetail';
 import { useCards, useNow, useRoute, useSettings } from './hooks';
 import { Library } from './Library';
@@ -38,11 +39,22 @@ export function App() {
           <a href="#/review" aria-current={route.name === 'review' ? 'page' : undefined}>
             Review{dueCount > 0 && <span className="nav-badge">{dueCount}</span>}
           </a>
-          <a href="#/library" aria-current={route.name === 'library' || route.name === 'card' ? 'page' : undefined}>
+          <a
+            href="#/library"
+            aria-current={route.name === 'library' || route.name === 'card' ? 'page' : undefined}
+          >
             Library
           </a>
           <a href="#/settings" aria-current={route.name === 'settings' ? 'page' : undefined}>
             Settings
+          </a>
+          <a
+            href="#/add"
+            className="mc-btn mc-btn-primary nav-add"
+            aria-current={route.name === 'add' ? 'page' : undefined}
+            title="Add a problem"
+          >
+            + Add
           </a>
         </div>
       </nav>
@@ -52,6 +64,7 @@ export function App() {
         {route.name === 'library' && <Library />}
         {route.name === 'card' && route.param && <CardDetail id={route.param} />}
         {route.name === 'settings' && <SettingsPage />}
+        {route.name === 'add' && <AddProblem />}
       </main>
     </div>
   );

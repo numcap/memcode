@@ -87,6 +87,9 @@ export function Popup() {
         <button type="button" className="mc-btn" onClick={() => openDashboard('#/library')}>
           Open library
         </button>
+        <button type="button" className="mc-btn" onClick={() => openDashboard('#/add')}>
+          + Add problem
+        </button>
       </footer>
     </div>
   );

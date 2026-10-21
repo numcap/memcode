@@ -1,4 +1,4 @@
-import type { Source } from './types';
+import type { CaptureSite } from './types';
 
 /**
  * The page-world hook and the isolated content scripts talk over window.postMessage.
@@ -19,7 +19,7 @@ export interface NeetcodeMeta {
 
 export interface AcceptedEvent {
   type: 'accepted';
-  site: Source;
+  site: CaptureSite;
   slug: string;
   code?: string;
   lang?: string;
