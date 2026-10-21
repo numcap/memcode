@@ -44,6 +44,7 @@ Reviews are **active recall**, not re-solving. You read the problem, work out th
 - [Sync with GitHub](#sync-with-github)
 - [Development](#development)
 - [Further reading](#further-reading)
+- [License](#license)
 
 ---
 
@@ -269,3 +270,9 @@ docs/          deep-dive docs and screenshots
 
 - **[How ReMCode works](docs/HOW-IT-WORKS.md):** a guided tour of the internals. It covers extension contexts and worlds, hooking `fetch`/`XMLHttpRequest`, LeetCode's judge protocol, Shadow DOM, FSRS, Chrome vs Firefox, and testing.
 - **[Original README](docs/ORIGINAL-README.md):** the earlier, more technical README, with full Firefox signing steps, capture endpoints and e2e details.
+
+---
+
+## License
+
+ReMCode is licensed under the [GNU General Public License v3.0](LICENSE). You're free to use, study, change and share it, but if you distribute a modified version, it must also be released under the GPL-3.0 with its source code.
