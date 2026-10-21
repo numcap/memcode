@@ -38,7 +38,7 @@ For development, run `npm run dev` and load `.output/chrome-mv3-dev` instead. It
 
 3. Open the `.xpi` file it writes to `web-ext-artifacts/` in Firefox.
 
-The add-on ID is `memcode@memcode` (in `wxt.config.ts`). Change it before your first signing if you want your own; it can't change afterwards without losing data.
+The add-on ID is `remcode@numcap` (in `wxt.config.ts`). Change it before your first signing if you want your own; it can't change afterwards without losing data.
 
 If you've turned off the add-on's access to LeetCode or NeetCode (Add-ons → ReMCode → Permissions), the popup and dashboard show an **Allow access** button.
 

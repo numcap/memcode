@@ -16,8 +16,9 @@ export default defineConfig({
     ...(browser === 'firefox' && {
       browser_specific_settings: {
         gecko: {
-          // From before the rename to ReMCode. Firefox ties stored data to this ID, so it stays.
-          id: 'memcode@memcode',
+          // Firefox ties stored data and the AMO listing to this ID, so don't change it again.
+          // (The old memcode@memcode was deleted on AMO, and AMO never reuses an ID.)
+          id: 'remcode@numcap',
           strict_min_version: '140.0',
           data_collection_permissions: { required: ['none'] },
         },
