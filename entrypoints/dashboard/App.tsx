@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { browser } from 'wxt/browser';
+import { Logo } from '@/components/Logo';
 import { SiteAccessBanner } from '@/components/SiteAccessBanner';
 import { buildQueue } from '@/lib/storage';
 import { CardDetail } from './CardDetail';
@@ -30,9 +31,7 @@ export function App() {
     <div className="app">
       <nav className="topnav">
         <a href="#/review" className="brand">
-          <span className="brand-mark" aria-hidden>
-            R
-          </span>
+          <Logo className="brand-mark" size={26} />
           <span className="brand-text">ReMCode</span>
         </a>
         <div className="nav-links">

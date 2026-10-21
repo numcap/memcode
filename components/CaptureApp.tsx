@@ -7,6 +7,7 @@ import { previewIntervals } from '@/lib/srs';
 import { cardId, getCard, getSettings } from '@/lib/storage';
 import type { Card, Problem, Rating, Source, Submission } from '@/lib/types';
 import { DifficultyPill } from './DifficultyPill';
+import { Logo } from './Logo';
 import { RatingButtons } from './RatingButtons';
 
 export interface SiteAdapter {
@@ -179,7 +180,8 @@ export function CaptureApp({ adapter, onLocationChange, subscribeAccepted }: Pro
           }
         >
           <span className="mc-fab-mark" aria-hidden>
-            R
+            <Logo size={24} />
+            {savedHere && <span className="mc-fab-check">✓</span>}
           </span>
           <span className="mc-fab-text">{savedHere ? 'In ReMCode' : 'Save to ReMCode'}</span>
         </button>
